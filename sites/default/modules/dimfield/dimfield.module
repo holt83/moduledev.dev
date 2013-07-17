@@ -377,14 +377,14 @@ function dimfield_field_formatter_view($obj_type, $object, $field, $instance,
     case 'dimfield_default':
       foreach ($items as $delta => $item) {
         if ($field['settings']['num_dimensions'] == 2) {
-          $output = t('@height @unit by @width @unit', array(
+          $output = t('@height @unit <b>by</b> @width @unit', array(
             '@height' => $item['height'],
             '@width' => $item['width'],
             '@unit' => dimfield_units($item['units']),  
           ));
         }
         elseif ($field['settings']['num_dimensions'] == 3) {
-          $output = t('@height @unit by @width @unit by @depth @unit', array(
+          $output = t('@height @unit <b>by</b> @width @unit <b>by</b> @depth @unit', array(
             '@height' => $item['height'],
             '@width' => $item['width'],
             '@depth' => $item['depth'],  
