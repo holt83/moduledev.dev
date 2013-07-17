@@ -1,0 +1,163 @@
+<?php
+
+/**
+ * @file 
+ * User warn module file.
+ * 
+ * This module allows site administrators to send a stock warning e-mail to a
+ * specified user or users through the admin interface.
+ * Administrators can configure the default e-mail including token replacement.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function user_warn_help($path, $arg) {
+  if ($path == 'admin/help#user_warn') {
+    return t('User warn allows site administrators to send a standard e-mail
+      to site users to notify them of improper behavior.');
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function user_warn_menu() {
+  $items = array();
+  $items['admin/config/people/user_warn'] = array(
+    'title' => 'User Warn',
+    'description' => 'Configuration for User Warn module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_warn_form'),
+    'access arguments' => array('administer users'),
+    'type' => MENU_NORMAL_ITEM,  
+  );
+  $items['user/%/warn'] = array(
+    'title' => 'Warn',
+    'description' => 'Send e-mail to a user about improper site behavior',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_warn_confirm_form', 1),
+    'access arguments' => array('administer users'),
+    'type' => MENU_LOCAL_TASK,   
+  );
+  return $items;
+}
+
+define('USER_WARN_MAIL_TEXT', 
+'Hello [user:name],
+   
+ We have been notified that you have posted comments on [site:name] that are in
+ violation of our terms of service. If this behaviour continues your account
+ will be suspended.
+   
+ Sincerely,
+ [site:mail]');
+
+/**
+ * Form builder: Create and display the User Warn configuration form.
+ */
+function user_warn_form($form, &$form_state) {
+  // Textfield for the e-mail subject.
+  $form['user_warn_e-mail_subject'] = array(
+    '#type' => 'textfield',
+    '#default_value' => variable_get('user_warn_e-mail_subject', 
+                                     'Administrative Warning'),  
+    '#title' => t('Warning e-mail subject'),
+    '#description' => t('The subject of the e-mail 
+                         which will be sent to users'),
+    '#size' => 40,
+    '#maxlength' => 120,
+    '#required' => TRUE,  
+  );
+  // Textarea for the body of the e-mail.
+  $form['user_warn_e-mail_text'] = array(
+    '#type' => 'textarea',
+    '#default_value' => variable_get('user_warn_e-mail_text', 
+                                     USER_WARN_MAIL_TEXT),  
+    '#rows' => 10,
+    '#columns' => 40,
+    '#title' => t('Warning e-mail text'),
+    '#required' => TRUE,
+    '#description' => t('The text of the e-mail which will be sent to users'),  
+  );
+  // Checkbox to indicate if admin should be sent a Bcc on e-mails.
+  $form['user_warn_bcc'] = array(
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('user_warn_bcc', FALSE),  
+    '#title' => t('BCC admin on all e-mails'),
+    '#description' => t('Indicates whether the admin user (as set in site 
+      configuration) should be sent on all warning e-mails.'),  
+  );
+  return system_settings_form($form);
+}
+
+/**
+ * Save configuration settings for User Warn module.
+ */
+/*function user_warn_form_submit($form, &$form_state) {
+  variable_set('user_warn_e-mail_subject', 
+               $form_state['values']['user_warn_email_subject']);
+  variable_set('user_warn_e-mail_text', 
+               $form_state['values']['user_warn_e-mail_text']);
+  variable_set('user_warn_bcc', 
+               $form_state['values']['user_warn_bcc']);
+  drupal_set_message(t('The settings have been saved'));
+}*/
+
+/**
+ * Form builder: display the e-mail configuration form.
+ */
+function user_warn_confirm_form($form, &$form_state, $uid) {
+  $form['account'] = array(
+    '#type' => 'value',
+    '#value' => user_load($uid),  
+  );
+  return confirm_form(
+    $form, 
+    t('Are you sure you want to send a warning e-mail to this user?'), 
+    'user/' . $uid, 
+    t('This action cannot be undone.'), 
+    t('Send e-mail'),
+    t('Cancel')    
+  );
+}
+
+/**
+ * Submit handler for the user_warn_confirm_form. Here we prepare
+ * a warning e-mail to be sent off to the specified user.
+ */
+function user_warn_confirm_form_submit($form, &$form_state) {
+  $account = $form_state['values']['account'];
+  drupal_mail(
+    'user_warn',
+    'warn',      
+    $account->mail, 
+    user_preferred_language($account), 
+    $form_state['values'], 
+    variable_get('site_mail', NULL),
+    TRUE      
+  ); 
+}
+
+/**
+ * Implements hook_mail().
+ */
+function user_warn_mail($key, &$message, $parameters) {
+  switch ($key) {
+    case 'warn':
+      $account = $parameters['account'];
+      $subject = variable_get('user_warn_e-mail_subject', 
+                              'Administrative Warning');
+      $body = variable_get('user_warn_e-mail_text', 
+                           USER_WARN_MAIL_TEXT);
+      if (variable_get('user_warn_bcc', FALSE)) {
+        $admin_mail = variable_get('site_mail', NULL);
+        $message['headers']['bcc'] = $admin_mail;
+      }
+      $message['to'] = $account->mail;
+      $message['subject'] = $subject;
+      // Use token_replace() to replace tokens with contextual text.
+      $message['body'][] = token_replace($body, array('user' => $account));
+      break;
+  }
+}
