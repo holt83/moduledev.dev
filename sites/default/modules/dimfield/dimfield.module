@@ -394,6 +394,99 @@ function dimfield_field_formatter_view($obj_type, $object, $field, $instance,
         $element[$delta] = array('#markup' => $output);
       }
       break;
+    case 'dimfield_table':
+      $rows = array();
+      foreach ($items as $delta => $item) { 
+        $row = array();
+        if ($settings['units_as'] == 'cell') {
+          $row[] = t('@value (%units)', array(
+            '@value' => $item['height'],
+            '%units' => dimfield_units($item['units']),  
+          ));
+          $row[] = t('@value (%units)', array(
+            '@value' => $item['width'],
+            '%units' => dimfield_units($item['units']),  
+          ));
+        }
+        else {
+          $row[] = $item['height'];
+          $row[] = $item['width'];
+        }
+        if ($field['settings']['num_dimensions'] == 3) {
+          if ($settings['units_as'] == 'cell') {
+            $row[] = t('@value (%units)', array(
+              '@value' => $item['depth'],
+              '%units' => dimfield_units($item['units']),  
+            ));
+          }
+          else {
+            $row[] = $item['depth'];
+          }
+        }
+        if ($settings['units_as'] == 'column') {
+          $row[] = dimfield_units($item['units']);
+        }
+        $rows[] = $row;
+      }
+      $header = array(t('Height'), t('Width'));
+      if ($field['settings']['num_dimensions'] == 3) {
+        $header[] = t('Depth');
+      }
+      if ($settings['units_as'] == 'column') {
+        $header[] = t('Units');
+      }
+      $element = array(
+        '#theme' => 'table',
+        '#rows' => $rows,
+        '#header' => $header,  
+      );
+      break;
   }
   return $element;
 }
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function dimfield_field_formatter_settings_form($field, $instance, $view_mode,
+                                                $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $form = array();
+  if ($display['type'] == 'dimfield_table') {
+    $form['units_as'] = array(
+      '#title' => t('Show units'),
+      '#type' => 'select',
+      '#options' => array(
+        'column' => t('As their own column'),
+        'cell' => t('In each cell'),
+        'none' => t('Do not show units'),  
+      ),
+      '#default_value' => $settings['units_as'],
+      '#required' => TRUE,  
+    );
+  }
+  return $form;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function dimfield_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $summary = '';
+  if ($display['type'] == 'dimfield_table') {
+    if ($settings['units_as'] == 'column') {
+      $summary = t('Show units as their own column');
+    }
+    elseif ($settings['units_as'] == 'cell') {
+      $summary = t('Show units in each cell');
+    }
+    elseif ($settings['units_as'] == 'none') {
+      $summary = t('Do not show units');
+    }
+  }
+  return $summary;
+}
+
