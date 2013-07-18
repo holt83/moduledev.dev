@@ -227,8 +227,7 @@ function artwork_page_list_recent() {
   $query
     ->entityCondition('entity_type', 'artwork')
     ->propertyOrderBy('created', 'DESC')
-    ->fieldCondition('field_artist', 'value', 'Da Vinci', 'CONTAINS', 0)
-    ->range(0, 5);
+    ->range(0, 10);
   $result = $query->execute();
   
   if ($result) {
