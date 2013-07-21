@@ -1,0 +1,5 @@
+name = Permission example
+description = A module that allows administrative users to see content creation permission for users.
+core = 7.x
+package = Drupal 7 development
+files[] = permission_example.module

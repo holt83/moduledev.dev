@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * View content creation permission module file.
+ * 
+ * Allows administartive users to view content creation permissions for 
+ * registrered users.
+ */
+
+/**
+ * Implements hook_permission().
+ */
+function permission_example_permission() {
+  return array(
+    'view content creation permissions' => array(
+      'title' => t('View the content creation options for registered users.'),
+      'decsription' => t('Displays the content types that a user may
+                         create on the user\'s profiel page.'),  
+    ),  
+  );
+}
