@@ -20,3 +20,24 @@ function permission_example_permission() {
     ),  
   );
 }
+
+/**
+ * Implements hook_menu().
+ */
+function permission_example_menu() {
+  $items['user/%user/content'] = array(
+    'title' => 'Content creation',
+    'page callback' => 'example_user_page',
+    'page arguments' => array(1),
+    'access arguments' => array('view content creation permissions'),
+    'type' => MENU_LOCAL_TASK,  
+  );
+  return $items;
+}
+
+/**
+ * Page callback.
+ */
+function example_user_page($user) {
+  return 'I feel so lucky, hey hey hey';
+}
