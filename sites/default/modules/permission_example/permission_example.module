@@ -25,11 +25,21 @@ function permission_example_permission() {
  * Implements hook_menu().
  */
 function permission_example_menu() {
+  $items = array();
   $items['user/%user/content'] = array(
     'title' => 'Content creation',
     'page callback' => 'example_user_page',
     'page arguments' => array(1),
     'access arguments' => array('view content creation permissions'),
+    'type' => MENU_LOCAL_TASK,  
+  );
+  $items['user/%user/content2'] = array(
+    'title' => 'Content creation 2',
+    'page callback' => 'example_user_page',
+    'page arguments' => array(1),
+    'access callback' => 'example_user_access',
+    'access arguments' => array('view content creation permissions',
+                                'administer users'),
     'type' => MENU_LOCAL_TASK,  
   );
   return $items;
@@ -38,6 +48,22 @@ function permission_example_menu() {
 /**
  * Page callback.
  */
-function example_user_page($user) {
-  return 'I feel so lucky, hey hey hey';
+function example_user_page($user) { 
+  return t('Content creation permissions for @name', array(
+    '@name' => $user->name, 
+  ));
+}
+
+/**
+ * Access callback that checks multiple permissions.
+ * 
+ * Takes a list of permissions and requires that all return TRUE.
+ */
+function example_user_access() {
+  foreach(func_get_args() as $permission) {
+    if (!user_access($permission)) {
+      return FALSE;
+    }
+  }
+  return TRUE;
 }
