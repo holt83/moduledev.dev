@@ -15,15 +15,25 @@ function chapter9_example_node_access($node, $op, $account) {
       return NODE_ACCESS_DENY;
     }
   }
-  // Allow users to edit all nodes creates by users with the same roles.
-  if ($op != 'update') {
-    return NODE_ACCESS_IGNORE;
+  // Allow users to edit all nodes creates by their peers.
+  if ($op == 'update') {
+    // If the user wants to edit self-created content we allow access
+    if ($account->uid == $node->uid) {
+      return NODE_ACCESS_ALLOW;
+    }
+    // Enforce that static cache of owners
+    $owners = &drupal_static(__FUNCTION__);
+    if (!isset($owners[$node->uid])) {
+      $owners[$node->uid] = user_load($node->uid);
+    }
+    // Check to see if the owner has any rules that the user, who wants to edit
+    // the content, doesn't have. 
+    $diff = array_diff($owners[$node->uid]->roles, $account->roles);
+    // If not, we allow access:
+    if (empty($diff)) {
+      return NODE_ACCESS_ALLOW;
+    }
+    return NODE_ACCESS_DENY;  
   }
-  $owner = user_load($node->uid);
-  $diff = array_diff($owner->roles, $account->roles);
-  $diff += array_diff($account->roles, $owner->roles);
-  if (empty($diff)) {
-    return NODE_ACCESS_ALLOW;
-  }
-  return NODE_ACCESS_DENY;
+  return NODE_ACCESS_IGNORE;
 }
