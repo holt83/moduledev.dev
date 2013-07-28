@@ -4,3 +4,26 @@
  * @file
  * This module contains examples from chapter 9 of Drupal 7 module development
  */
+
+/**
+ * Implements hook_node_access().
+ */
+function chapter9_example_node_access($node, $op, $account) {
+  // Only allow post articles by users with accounts more than 2 days old.
+  if ($op == 'create' && $node == 'article') {
+    if (empty($account->created) || $account->created > (REQUEST_TIME - (48 * 3600))) {
+      return NODE_ACCESS_DENY;
+    }
+  }
+  // Allow users to edit all nodes creates by users with the same roles.
+  if ($op != 'update') {
+    return NODE_ACCESS_IGNORE;
+  }
+  $owner = user_load($node->uid);
+  $diff = array_diff($owner->roles, $account->roles);
+  $diff += array_diff($account->roles, $owner->roles);
+  if (empty($diff)) {
+    return NODE_ACCESS_ALLOW;
+  }
+  return NODE_ACCESS_DENY;
+}
