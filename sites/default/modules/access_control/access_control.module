@@ -2,13 +2,13 @@
 
 /**
  * @file
- * This module contains examples from chapter 9 of Drupal 7 module development
+ * An example of a access control module.
  */
 
 /**
  * Implements hook_node_access().
  */
-function chapter9_example_node_access($node, $op, $account) {
+function access_control_node_access($node, $op, $account) {
   // Only allow post articles by users with accounts more than 2 days old.
   if ($op == 'create' && $node == 'article') {
     if (empty($account->created) || $account->created > (REQUEST_TIME - (48 * 3600))) {

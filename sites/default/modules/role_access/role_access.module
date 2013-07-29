@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * @file
+ * 
+ * An example of a node access module.
+ * 
+ * Provides a simple content access scheme based on the author's role.
+ */
+
+
+

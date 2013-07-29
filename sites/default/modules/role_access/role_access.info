@@ -1,0 +1,5 @@
+name = Role Access
+description = An example of a node access module.
+core = 7.x
+package = Drupal 7 development
+files[] = role_access.module

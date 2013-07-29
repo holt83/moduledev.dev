@@ -1,5 +1,0 @@
-name = Chapter 9 Examples
-decsription = A that contains example from chapter 9 of Drupal 7 Module Development.
-core = 7.x
-package = Drupal 7 development
-files[] = chapter9_example.module

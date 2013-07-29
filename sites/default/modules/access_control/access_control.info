@@ -1,0 +1,5 @@
+name = Access Control
+description = An example of a access control module.
+core = 7.x
+package = Drupal 7 development
+files[] = access_control.module
