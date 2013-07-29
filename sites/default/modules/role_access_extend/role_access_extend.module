@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * @file 
+ * 
+ * Role Access Extend.
+ * 
+ * Additional configuration options for Role Access.
+ */
+
+/**
+ * Implements hook_permission().
+ */
+function role_access_extend_permission() {
+  return array(
+    'view role access as authenticated user' => array(
+      'title' => t('View role-restricted content as authenticated user'),
+      'description' => t('Allow anonymous users to view content created by
+                          authenticated users.'),  
+    ),
+    'assign role access as authenticated user' => array(
+      'title' => t('Save role-restricted content as authenticated user'),
+      'description' => t('Save new and updated content so that authenticated
+                          users have permissions. <em>Normally this is set
+                          to off.</em>'),  
+    ),  
+  );
+}
+
+/**
+ * Implements hook_node_grants_alter().
+ */
+function role_access_extend_node_grants_alter(&$grants, $account, $op) {
+  // We only act on the view operation.
+  // If our grant is not present, do nothing.
+  if ($op != 'view' || !isset($grants['role_access'])) {
+    return;
+  }
+  // Get the defined role-id for authenticated user.
+  $rid = DRUPAL_AUTHENTICATED_RID;
+  // Check the permission.
+  $access_check = user_access('view role access as authenticated user'); 
+  // Restrict custom roles to only view content created by people in those roles.
+  // Check for authenticated user
+  if ($account->uid > 0) {
+    // Users with more than 1 role should have 'authenticated user' removed.
+    if (count($account->roles) && in_array($rid, $grants['role_acces']) && !$access_check) {
+      // The grants array is in the order $grants[$realm][$key] => $value, so
+      // flip it, unset and flip back.
+      $grants['role_access'] = array_flip($grants['role_access']);
+      unset($grants['role_access'][$rid]);
+      $grants['role_access'] = array_flip($grants['role_access']);
+    }
+  }
+  // Check for users with 'view role access as authenticated user' permission
+  elseif ($access_check) {
+    $grants['role_access'][] = $rid;
+  }
+}
+
+/**
+ * Implements
+ */

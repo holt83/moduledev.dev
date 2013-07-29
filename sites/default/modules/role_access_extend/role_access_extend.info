@@ -1,0 +1,5 @@
+name = Role Access Extend
+description = An example of module that alters the node access grants given by another module. In this case the Role Access module.
+core = 7.x
+package = Drupal 7 development
+files[] = role_access_extend.module

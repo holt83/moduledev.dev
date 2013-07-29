@@ -8,5 +8,112 @@
  * Provides a simple content access scheme based on the author's role.
  */
 
+/**
+ * Imlpements hook_node_access_records().
+ * 
+ * We want to store a row in the node_access table for each role assigned to 
+ * the author of the node.
+ */
+function role_access_node_access_records($node) {
+  // First get the user record. Note that we avoid using $user here, since that
+  // is the global $user object.
+  $account = user_load($node->uid);
+  // Now, get the roles array from the $account object.
+  $roles = array_keys($account->roles);
+  // Initialize grants array
+  $grants = array();
+  foreach ($roles as $grant_id) {
+    $grants[] = array(
+      'realm' => 'role_access',
+      'gid' => $grant_id,
+      'grant_view' => 1,
+      'grant_update' => 1,
+      'grant_delete' => 1,
+      'priority' => 0, // If not 0, other grants are ignored  
+    );
+  }
+  return $grants;
+}
 
+/**
+ * Implements hook_node_grants().
+ */
+function role_access_node_grants($account, $op) {
+  // Get the users roles.
+  $roles = array_keys($account->roles);
+    file_put_contents("/home/quickstart/debug/debug.txt", print_r($account->roles , TRUE), FILE_APPEND);
+  // Error checking
+  if (empty($roles)) {
+    return array();
+  }
+  // Initialize a grants array.
+  $grants = array();
+  // Iterate throught the roles and insert the grants in array (realm => gid)
+  foreach ($roles as $grant_id) {
+    if (user_access($op . ' role access content')) {
+      $grants['role_access'][] = $grant_id;  
+    }
+  }
+  return $grants;
+}
 
+/**
+ * Implements hook_permission().
+ * 
+ * Define our modules permissions as follows:
+ * - view role access content
+ * - update role access content
+ * - delete role access content
+ */
+function role_access_permission() {
+  return array(
+    'view role access content' => array(
+      'title' => t('View role-restricted content'),
+      'description' => t('Allow users to view content assigned by role.')  
+    ),
+    'update role access content' => array(
+      'title' => t('Edit role-restricted content'),
+      'description' => t('Allow users to edit content assigned by role.')   
+    ),
+    'delete role access content' => array(
+      'title' => t('Delete role-restricted content'),
+      'description' => t('Allow users to delete content assigned by role.')   
+    ),  
+  );
+}
+
+/**
+ * Implements hook_node_access_explain().
+ * 
+ * Devel Node Access hook.
+ */
+function role_access_node_access_explain($row) {
+  // If not our grant, ignore.
+  watchdog('ROLE ACCESS', 'IN EXPLAIN');
+  if ($row->realm != 'role_access') {
+    return NULL;
+  }
+  // Get a list of user-roles.
+  $roles = user_roles();
+  // Get our permission definitions.
+  $permissions = role_access_permission();
+  // Initiate a results variable, for theming the output.
+  $results = array();
+  foreach (array('view', 'update', 'delete') as $op) {
+    if (in_array($row->gid, array_keys($roles))) {
+      $results[] = t('%roles with the permission %perm may %op this content', array(
+        '%roles' => $roles[$row->gid],
+        '%perm' => $permissions[$op . ' role access content']['title'],
+        '%op' => $op,  
+      ));
+    }
+  }
+  // Prepare for theming. The results are allready secure having run through t().
+  $variables = array(
+    'items' => $results,
+    'title' => '',
+    'type' => 'ul',  
+  );
+  // Return a nicely themed list.
+  return theme('item_list', $variables);
+}
