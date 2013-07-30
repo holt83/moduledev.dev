@@ -41,17 +41,20 @@ function role_access_node_access_records($node) {
 function role_access_node_grants($account, $op) {
   // Get the users roles.
   $roles = array_keys($account->roles);
-    file_put_contents("/home/quickstart/debug/debug.txt", print_r($account->roles , TRUE), FILE_APPEND);
   // Error checking
   if (empty($roles)) {
     return array();
   }
   // Initialize a grants array.
   $grants = array();
-  // Iterate throught the roles and insert the grants in array (realm => gid)
-  foreach ($roles as $grant_id) {
-    if (user_access($op . ' role access content')) {
+  if (user_access($op . ' role access content')) {
+    // Iterate throught the roles and insert the grants in array (realm => gid)
+    foreach ($roles as $grant_id) {
       $grants['role_access'][] = $grant_id;  
+    }
+    // Always allow users to access content created by 'Anonymous users'
+    if (!in_array(1, $roles)) {
+      $grants['role_access'][] = DRUPAL_ANONYMOUS_RID;
     }
   }
   return $grants;
