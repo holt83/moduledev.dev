@@ -1,0 +1,6 @@
+name = Javascript Fun
+description = A module that contain variuous Javascript example
+core = 7.x
+package = Drupal 7 development
+files[] = javascript_fun.module
+scripts[] = javascript_theme.js
