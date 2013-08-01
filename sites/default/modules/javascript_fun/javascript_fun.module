@@ -6,3 +6,79 @@
  * Contains various examples of how to use Javascript in drupal.
  */
 
+/**
+ * Implements hook_init().
+ */
+function javascript_fun_init() {
+  // Passing values from PHP to Javascript with a $settings array
+  $settings = array(
+    'helloWorld' => array(
+      'display' => 'alert',
+      'message' => 'This message was passed from PHP!',
+    ),  
+  );
+  drupal_add_js($settings, 'setting');
+}
+
+/**
+ * Implements hook_menu().
+ */
+function javascript_fun_menu() {
+  $items = array();
+  $items['javascript-fun/simple-form-example'] = array(
+    'title' => 'Hello World: Simple AJAX Example',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('javascript_fun_simple_form_example'),
+    'access callback' => TRUE,  
+  );
+  return $items;
+}
+
+/**
+ * Form-builder
+ */
+function javascript_fun_simple_form_example($form, &$form_state) {
+  $form = array();
+  // Define a form element with #ajax property which defines a callback function
+  // and a wrapper to put the update from ajax response in.
+  $form['hello_city'] = array(
+    '#title' => t('Choose a city'),
+    '#type' => 'select',
+    '#options' => array(
+      t('World') => t('World'),
+      t('Chicago') => t('Chicago'),
+      t('New York') => t('New York'),
+      t('Los Angeles') => t('Los Angeles'),  
+    ),
+    '#ajax' => array(
+      'callback' => 'javascript_fun_simple_form_callback',
+      'wrapper' => 'ajax_markup_div',  
+    ),    
+  );
+  // A form which serves as the wrapper for the update from ajax response.
+  $form['ajax_markup'] = array(
+    '#prefix' => '<div id="ajax_markup_div">',
+    '#suffix' => '</div>',
+    '#markup' => t('Hello World'),  
+  );
+  // If the form element 'hello_city' is populated this is an AJAX request and
+  // we update the markup in our ajax wrapper.
+  if (!empty($form_state['values']['hello_city'])) {
+    $form['ajax_markup']['#markup'] = t('Hello !city', array(
+      '!city' => $form_state['values']['hello_city'],  
+    ));
+  }
+  return $form;
+}
+
+/**
+ * Ajax form-callback.
+ * 
+ * Here we return the form element that is being replaced by the AJAX request.
+ * Drupal renders it to the appropiate value and sends the updated HTML back
+ * to the page where Drupal AJAX handlers retrieve the changes and updates the
+ * wrapper. 
+ */
+function javascript_fun_simple_form_callback($form, &$form_state) {
+  return $form['ajax_markup'];
+}
