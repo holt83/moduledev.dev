@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file 
+ * This module allows site administrators to embed various facebook-plugins
+ * on the website.
+ */
+
+/**
+ * Intercept the HTML preprocessing to add the Facebook Javascript sdk loader
+ * to the page right after the opening body tag as recommended.
+ */
+/*function embed_facebook_preprocess_html(&$variables) {
+  $variables['facebook_root_div'] = array(
+    '#prefix' => '<div id="fb-root">',
+    '#suffix' => '</div>',  
+  );
+  $fb_loader_script = <<<END
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/da_DK/all.js#xfbml=1";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, "script", "facebook-jssdk"));
+END;
+  $variables['facebook_sdk_loader'] = array(
+    '#prefix' => '<script>',
+    '#suffix' => '</script>',
+    '#markup' => $fb_loader_script, 
+  );
+} */
+
+function embed_facebook_page_build(&$page) {
+  $page['page_top']['facebook_root_div'] = array(
+    '#prefix' => '<div id="fb-root">',
+    '#suffix' => '</div>',  
+  );
+  $fb_loader_script = <<<END
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/da_DK/all.js#xfbml=1";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, "script", "facebook-jssdk"));
+END;
+  $page['page_top']['facebook_sdk_loader'] = array(
+    '#prefix' => '<script>',
+    '#suffix' => '</script>',
+    '#markup' => $fb_loader_script, 
+  );
+}
+  

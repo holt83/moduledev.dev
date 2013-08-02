@@ -26,10 +26,21 @@ function javascript_fun_init() {
 function javascript_fun_menu() {
   $items = array();
   $items['javascript-fun/simple-form-example'] = array(
-    'title' => 'Hello World: Simple AJAX Example',
+    'title' => 'Javascript Fun: Simple AJAX Example',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('javascript_fun_simple_form_example'),
     'access callback' => TRUE,  
+  );
+  $items['javascript-fun/link'] = array(
+    'title' => 'Javascript Fun: Link',
+    'page callback' => 'javascript_fun_link',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),  
+  );
+  $items['javascript-fun-link-callback'] = array(
+    'page callback' => 'javascript_fun_link_response',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),  
   );
   return $items;
 }
@@ -81,4 +92,36 @@ function javascript_fun_simple_form_example($form, &$form_state) {
  */
 function javascript_fun_simple_form_callback($form, &$form_state) {
   return $form['ajax_markup'];
+}
+
+/**
+ * Page callback for javascript-fun/link. 
+ */
+function javascript_fun_link() {
+  drupal_add_js('misc/ajax.js');
+  $link = l(t('Say Hello'), 'javascript-fun-link-callback/nojs/', array(
+    'attributes' => array('class' => 'use-ajax'),  
+  ));
+  return '<div>' . $link . '</div><div id="saying-hello"></div>';
+}
+
+/**
+ * Page callback for javascript-fun-link-callback.
+ */
+function javascript_fun_link_response($type = 'ajax') {
+  if ($type == 'ajax') {
+    $output = t('Hello World');
+    $commands = array();
+    $commands[] = ajax_command_append('#saying-hello', $output);
+    $page = array(
+      '#type' => 'ajax',
+      '#commands' => $commands,  
+    );
+    ajax_deliver($page);
+  }
+  // Else AJAX was disabled in the client and we are performing a full page
+  // request.
+  else {
+    return t('Hello world in a new page');
+  }
 }
