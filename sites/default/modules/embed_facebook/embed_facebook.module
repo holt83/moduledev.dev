@@ -1,5 +1,7 @@
 <?php
 
+define('TEST_LIKE_URL', 'http://randersbib.dk/biblioteker/blog/saa-randers-uge');
+
 /**
  * @file 
  * This module allows site administrators to embed various facebook-plugins
@@ -7,30 +9,12 @@
  */
 
 /**
- * Intercept the HTML preprocessing to add the Facebook Javascript sdk loader
- * to the page right after the opening body tag as recommended.
+ * Implements hook_page_build().
+ * 
+ * Adds the facebook sdk loader to the page render array. Because it is
+ * recommended to place the loader after the opening body tag, the region 
+ * page-top is used.
  */
-/*function embed_facebook_preprocess_html(&$variables) {
-  $variables['facebook_root_div'] = array(
-    '#prefix' => '<div id="fb-root">',
-    '#suffix' => '</div>',  
-  );
-  $fb_loader_script = <<<END
-  (function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/da_DK/all.js#xfbml=1";
-    fjs.parentNode.insertBefore(js, fjs);
-  }(document, "script", "facebook-jssdk"));
-END;
-  $variables['facebook_sdk_loader'] = array(
-    '#prefix' => '<script>',
-    '#suffix' => '</script>',
-    '#markup' => $fb_loader_script, 
-  );
-} */
-
 function embed_facebook_page_build(&$page) {
   $page['page_top']['facebook_root_div'] = array(
     '#prefix' => '<div id="fb-root">',
@@ -51,4 +35,58 @@ END;
     '#markup' => $fb_loader_script, 
   );
 }
-  
+
+/**
+ * Implements hook_block_info().
+ * 
+ * Declares the various blocks provided in this module.
+ */
+function embed_facebook_block_info() {
+  $blocks = array();
+  $blocks['like_button'] = array(
+    'info' => t('Embed a facebook like button'),
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function embed_facebook_block_view($delta) {
+  $block = array(
+    'subject' => '',
+    'content' => '',  
+  );
+  if ($delta == 'like_button') {
+    $block['subject'] = t('Facebook like button');
+    $configuration = array(
+      'like_url' => TEST_LIKE_URL,
+      'width' => '450',
+    );
+    $block['content']['like_button'] = array(
+      '#theme' => 'embed_facebook_like_button',
+      '#configurations' => $configuration,  
+    );
+  }
+}
+
+/**
+ * Implements hook_theme().
+ * 
+ * Declares a theme hook for each facebook plugin this module supports
+ */
+function embed_facebook_theme($existing, $type, $theme, $path) {
+  return array(
+    'embed_facebook_like_button' => array(
+      'variables' => array(
+        'configurations' => array(
+          'like_url' => TEST_LIKE_URL,
+          'width' => '450',  
+        ),   
+      ),
+      'template' => 'embed-facebook-like-button',  
+    ),   
+  );
+}
+
+
