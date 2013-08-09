@@ -1,0 +1,9 @@
+
+/* 
+ * The container-div for the facebook like button can be styled with the
+ * following css-rule. 
+ */
+#block-embed-facebook-like-button .fb-like {
+  width: 100px;
+  padding: 5px;
+}
