@@ -60,13 +60,16 @@ function embed_facebook_block_view($delta) {
   if ($delta == 'like_button') {
     $block['subject'] = t('Facebook');
     $block['content']['like_button'] = array(
-      '#theme' => 'embed_facebook_like_button',
+      '#theme' => 'embed_facebook__like',
+      '#type' => 'like',  
+      '#layout' => 'box_count',
+      '#width' => '100',  
     );
     $css_options = array(
       'group' => CSS_DEFAULT,
       'preprocess' => false,
     );
-    $css_path = drupal_get_path('module', 'embed_facebook') . '/embed-facebook-like-button.css';
+    $css_path = drupal_get_path('module', 'embed_facebook') . '/embed-facebook.css';
     $block['content']['#attached']['css'] = array($css_path => $css_options);
   }
   return $block;
@@ -79,14 +82,18 @@ function embed_facebook_block_view($delta) {
  */
 function embed_facebook_theme($existing, $type, $theme, $path) {
   return array(
-    'embed_facebook_like_button' => array(
-      'variables' => array( 
-        'like_url' => DEFAULT_URL,
-        'send' => FALSE,  
+    'embed_facebook' => array(
+      'variables' => array(
+        'type' => 'like',  
+        'url' => DEFAULT_URL,
+        'send' => TRUE,  
         'colorscheme' => 'light',
         'action' => 'like',
+        'layout' => 'standard',
+        'width' => '450',
+        'faces' => TRUE,  
       ),
-      'template' => 'embed-facebook-like-button',  
+      'template' => 'embed-facebook',  
     ),
   );
 }
@@ -94,19 +101,19 @@ function embed_facebook_theme($existing, $type, $theme, $path) {
 /**
  * Preprocess the variables for the embed_facebook_like_button theme hook.
  */
-function template_preprocess_embed_facebook_like_button(&$variables) {
-  $variables['facebook_attributes_array'] = array(
-    'data-href' => $variables['like_url'],
-    'data-send' => $variables['send'],
-    'data-colorscheme' => $variables['colorscheme'],
-    'data-action' => $variables['action'],
-    'data-layout' => 'box_count',  
+function template_preprocess_embed_facebook(&$variables) {
+  $variables['attributes_array'] += array(
+    'data-href' => $variables['url'],
+    'data-colorscheme' => $variables['colorscheme'],  
   );
-}
-
-/**
- * Process the variables for the embed_facebook_like_button theme hook.
- */
-function template_process_embed_facebook_like_button(&$variables) {
-  $variables['facebook_attributes'] = drupal_attributes($variables['facebook_attributes_array']);
+  // Setup variables specific to the like button plugin
+  if ($variables['type'] == 'like') {
+    $variables['attributes_array'] += array(
+      'data-send' => $variables['send'],
+      'data-action' => $variables['action'],
+      'data-layout' => $variables['layout'],
+      'data-width' => $variables['width'],  
+    );
+    $variables['classes_array'][] = 'fb-like';
+  }
 }

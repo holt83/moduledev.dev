@@ -1,0 +1,16 @@
+
+/*
+ * Css-rule for styling the container div of a facebook plugin in a block.
+ * Can be used to add a border, padding etc.
+ */
+.block-embed-facebook .embed-facebook {
+  
+}
+
+/*
+ * Css-rule for styling the container div for the like button
+ * Can be used to add a border, padding etc.
+ */
+#block-embed-facebook-like-button .embed-facebook {
+  
+}
