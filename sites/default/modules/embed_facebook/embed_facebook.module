@@ -2,6 +2,7 @@
 
 define('DEFAULT_URL', 'http://randersbib.dk');
 define('PATH', drupal_get_path('module', 'embed_facebook'));
+define('APP_ID', '179045622276203');
 
 /**
  * @file 
@@ -34,19 +35,25 @@ function embed_facebook_page_build(&$page) {
  * Adds a general stylesheet to evey page with rules which apply to every plugin 
  * container div.
  * 
- * Adds a general javascript file to every page.
+ * Constructs a PHP variable with the modules url to the facebook channel file,
+ * and passes it to the page as a Javascript variable. This url is used when the
+ * facebook Javascript sdk is loaded.
  */
 function embed_facebook_preprocess_page(&$variables) {
+  global $base_url;
   $css_options = array(
     'group' => CSS_DEFAULT,
     'every_page' => TRUE,  
   );
   drupal_add_css(PATH . '/embed-facebook.css', $css_options);
-  $js_options = array(
-    'group' => JS_DEFAULT,
-    'every_page' => TRUE,
+  $channel_url = $base_url . '/' . PATH . '/embed_facebook_channel.php';
+  $js_settings = array(
+    'embedFacebook' => array(
+      'channelUrl' => $channel_url,
+      'appId' => APP_ID,  
+    ),  
   );
-  drupal_add_js(PATH . '/embed-facebook.js', $js_options);
+  drupal_add_js($js_settings, 'setting');
 }
 
 /**
@@ -66,18 +73,23 @@ function embed_facebook_block_info() {
  * Implements hook_block_view().
  */
 function embed_facebook_block_view($delta) {
+  global $base_url;
   $block = array(
     'subject' => '',
     'content' => '',  
   );
+  $current_url = $base_url . $_SERVER['REQUEST_URI'];
   if ($delta == 'like_button') {
     $block['subject'] = t('Facebook');
     $block['content']['like_button'] = array(
       '#theme' => 'embed_facebook__like',
+      '#url' => DEFAULT_URL, //For testing. Normally use $current_url   
       '#type' => 'like',  
       '#layout' => 'box_count',
       '#width' => '100',  
     );
+    // Adds a stylesheet to with rules which apply to the plugin container for 
+    // the like button
     $css_options = array(
       'group' => CSS_DEFAULT,
     );
@@ -113,6 +125,7 @@ function embed_facebook_theme($existing, $type, $theme, $path) {
  * Preprocess the variables for the embed_facebook_like_button theme hook.
  */
 function template_preprocess_embed_facebook(&$variables) {
+  // Setup general variables for facebook plugins
   $variables['attributes_array'] += array(
     'data-href' => $variables['url'],
     'data-colorscheme' => $variables['colorscheme'],  
