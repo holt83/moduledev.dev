@@ -1,12 +1,9 @@
 window.fbAsyncInit = function() {
   FB.init({
     appId: Drupal.settings.embedFacebook.appId,
+    channelUrl: Drupal.settings.embedFacebook.channelUrl,
     status: true,
-    xfbml: true,
-    channelUrl: Drupal.settings.embedFacebook.channelUrl
-  });
-  FB.Event.subscribe('edge.create', function(response) {
-    alert('You like the URL: ' + response);
+    xfbml: true
   });
 };
 (function(d, s, id) {

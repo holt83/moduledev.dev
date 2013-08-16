@@ -1,14 +1,14 @@
 <?php
-
-define('DEFAULT_URL', 'http://randersbib.dk');
-define('PATH', drupal_get_path('module', 'embed_facebook'));
-define('APP_ID', '179045622276203');
-
 /**
  * @file 
  * This module allows site administrators to embed various facebook-plugins
  * on the website.
  */
+
+// Constants
+define('PATH', drupal_get_path('module', 'embed_facebook'));
+define('APP_ID', '179045622276203');
+
 
 /**
  * Implements hook_page_build().
@@ -40,12 +40,12 @@ function embed_facebook_page_build(&$page) {
  * facebook Javascript sdk is loaded.
  */
 function embed_facebook_preprocess_page(&$variables) {
-  global $base_url;
   $css_options = array(
     'group' => CSS_DEFAULT,
     'every_page' => TRUE,  
   );
-  drupal_add_css(PATH . '/embed-facebook.css', $css_options);
+  drupal_add_css(PATH . '/css/embed-facebook.css', $css_options);
+  global $base_url;
   $channel_url = $base_url . '/' . PATH . '/embed_facebook_channel.php';
   $js_settings = array(
     'embedFacebook' => array(
@@ -63,8 +63,14 @@ function embed_facebook_preprocess_page(&$variables) {
  */
 function embed_facebook_block_info() {
   $blocks = array();
-  $blocks['like_button'] = array(
-    'info' => t('Facebook like button'),
+  $blocks['like'] = array(
+    'info' => t('Embed Facebook: Like button'),
+  );
+  $blocks['send'] = array(
+    'info' => t('Embed Facebook: Send button'),
+  );
+  $blocks['follow'] = array(
+    'info' => t('Embed Facebook: Follow button'),  
   );
   return $blocks;
 }
@@ -73,27 +79,44 @@ function embed_facebook_block_info() {
  * Implements hook_block_view().
  */
 function embed_facebook_block_view($delta) {
-  global $base_url;
   $block = array(
-    'subject' => '',
+    'subject' => t('Facebook'),
     'content' => '',  
   );
-  $current_url = $base_url . $_SERVER['REQUEST_URI'];
-  if ($delta == 'like_button') {
-    $block['subject'] = t('Facebook');
+  $css_options = array(
+    'group' => CSS_DEFAULT,
+  );
+  $css_path = PATH;
+  // Like button block
+  if ($delta == 'like') {
     $block['content']['like_button'] = array(
       '#theme' => 'embed_facebook__like',
-      '#url' => DEFAULT_URL, //For testing. Normally use $current_url   
-      '#type' => 'like',  
+      '#type' => 'like',
       '#layout' => 'box_count',
-      '#width' => '100',  
     );
-    // Adds a stylesheet to with rules which apply to the plugin container for 
-    // the like button
-    $css_options = array(
-      'group' => CSS_DEFAULT,
+    $css_path .= '/css/embed-facebook-like.css';
+    $block['content']['#attached']['css'][$css_path] = $css_options;
+  }
+  // Send button block
+  elseif ($delta == 'send') {
+    $block['content']['send_button'] = array(
+      '#theme' => 'embed_facebook__send',
+      '#type' => 'send',
+      '#colorscheme' => 'light',
     );
-    $block['content']['#attached']['css'][PATH . '/embed-facebook-like.css'] = $css_options;
+    $css_path .= '/css/embed-facebook-send.css';
+    $block['content']['#attached']['css'][$css_path] = $css_options;
+  }
+  // Follow button block
+  elseif ($delta == 'follow') {
+    $block['content']['follow_button'] = array(
+      '#theme' => 'embed_facebook__follow',
+      '#type' => 'follow',
+      '#layout' => 'box_count',
+      '#url' => 'https://www.facebook.com/zuck'  
+    );
+    $css_path .= '/css/embed-facebook-follow.css';
+    $block['content']['#attached']['css'][$css_path] = $css_options;
   }
   return $block;
 }
@@ -108,12 +131,12 @@ function embed_facebook_theme($existing, $type, $theme, $path) {
     'embed_facebook' => array(
       'variables' => array(
         'type' => 'like',  
-        'url' => DEFAULT_URL,
-        'send' => TRUE,  
-        'colorscheme' => 'light',
-        'action' => 'like',
-        'layout' => 'standard',
-        'width' => '450',
+        'url' => '',
+        'send' => FALSE,  
+        'colorscheme' => '',
+        'action' => '',
+        'layout' => '',
+        'width' => '',
         'faces' => TRUE,  
       ),
       'template' => 'embed-facebook',  
@@ -122,23 +145,37 @@ function embed_facebook_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Preprocess the variables for the embed_facebook_like_button theme hook.
+ * Preprocess the variables for the embed_facebook theme hook.
  */
 function template_preprocess_embed_facebook(&$variables) {
   // Setup general variables for facebook plugins
   $variables['attributes_array'] += array(
     'data-href' => $variables['url'],
     'data-colorscheme' => $variables['colorscheme'],  
+    'data-width' => $variables['width'],
+    'data-show-faces' => $variables['faces'],  
   );
-  // Setup variables specific to the like button plugin
+  // Setup variables specific to the like and the follow button
+  if ($variables['type'] == 'like' || $variables['type'] == 'follow') {
+    $variables['attributes_array'] += array(
+      'data-layout' => $variables['layout'], 
+    );    
+  }
+  // Setup variables specific to the like button
   if ($variables['type'] == 'like') {
     $variables['attributes_array'] += array(
       'data-send' => $variables['send'],
       'data-action' => $variables['action'],
-      'data-layout' => $variables['layout'],
-      'data-width' => $variables['width'],  
     );
     $variables['classes_array'][] = 'fb-like';
+  }
+  // Setup variables specific to the send button
+  elseif ($variables['type'] == 'send') {
+    $variables['classes_array'][] = 'fb-send';
+  }
+  // Setup variables specific to the follow button
+  elseif ($variables['type'] == 'follow') {
+    $variables['classes_array'][] = 'fb-follow';
   }
 }
 

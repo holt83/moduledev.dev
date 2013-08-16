@@ -1,0 +1,25 @@
+/*
+ * Css-rule for styling the block container div element for the send button
+ * Can be used to add a border, padding etc.
+ */
+#block-embed-facebook-send {
+
+}
+
+/*
+ * Css-rule for styling the container div element for the send button
+ * Can be used to add a border, padding etc.
+ */
+#block-embed-facebook-send .embed-facebook {
+
+}
+ 
+/*
+ * Css-rule for styling the container span element for the send button
+ * Can be used to add a border, padding etc.
+ */
+#block-embed-facebook-send .embed-facebook > span {
+
+}
+
+  
