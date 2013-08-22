@@ -36,13 +36,11 @@ function single_blog_list($number) {
  */
 function single_blog_block_info() {
   $blocks = array();
-  
   // The array key defines the $delta parameter used in all other block hooks.
   $blocks['recent'] = array(
     // The name of the block on the administration page.  
     'info' => t('Recent blog posts.'),  
   );
-  
   return $blocks;
 }
 

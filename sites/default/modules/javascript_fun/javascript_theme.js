@@ -1,4 +1,3 @@
-
 /*(function($) {
   // Declare a theme function
   Drupal.theme.prototype.hello = function(text) {
