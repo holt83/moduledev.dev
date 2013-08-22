@@ -1,0 +1,5 @@
+name = Image Fun
+description = A module that contain variuous examples using Drupal's File API
+core = 7.x
+package = Drupal 7 development
+files[] = image_fun.module
