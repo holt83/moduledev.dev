@@ -9,7 +9,7 @@ define('SINGLE_BLOG_NODE_TYPE', 'article');
 define('SINGLE_BLOG_LIST_COUNT', 5);
 
 /**
- * Return a list of blog entries.
+ * Return a list of blog entries.s
  * 
  * @param $number
  *   The number of blog entries to return.
