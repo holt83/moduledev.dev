@@ -34,19 +34,21 @@ function embed_facebook_like_render($subtype, $conf, $args, $context) {
 
 function embed_facebook_like_edit_form($form, &$form_state) {
   $conf = $form_state['conf'];
-  $form['test'] = array(
+  $form['data-href'] = array(
     '#type' => 'textfield',
-    '#title' => t('Test'),
-    '#size' => 50,
-    '#description' => t('This is a test'),
+    '#title' => t('URL to like'),
+    '#description' => t('The url associated with this like button. Leave empty 
+      to point to the current url'),
     '#default_value' => empty($conf['test']) ? '' : $conf['test'],
+    '#prefix' => '<div class="clear-block no-float">',
+    '#suffix' => '</div>',
   );
   return $form;
 }
 
 function embed_facebook_like_edit_form_submit($form, &$form_state) {
   $form_keys = array(
-    'test',  
+    'data-href',  
   );
   foreach ($form_keys as $form_key) {
     $form_state['conf'][$form_key] = $form_state['values'][$form_key];
