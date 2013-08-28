@@ -95,6 +95,7 @@ function embed_facebook_block_view($delta) {
       '#theme' => 'embed_facebook__like',
       '#type' => 'like',
       '#layout' => 'box_count',
+      '#faces' => 'true',  
     );
     $css_path .= 'css/embed-facebook-like-block.css';
   }
@@ -135,12 +136,12 @@ function embed_facebook_theme($existing, $type, $theme, $path) {
       'variables' => array(
         'type' => 'like',  
         'url' => '',
-        'send' => FALSE,  
-        'colorscheme' => '',
-        'action' => '',
-        'layout' => '',
-        'width' => '',
-        'faces' => TRUE,  
+        'send' => 'false',  
+        'colorscheme' => 'light',
+        'action' => 'like',
+        'layout' => 'standard',
+        'width' => '450',
+        'faces' => 'false',
       ),
       'template' => 'embed-facebook',  
     ),
