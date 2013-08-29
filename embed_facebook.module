@@ -86,40 +86,42 @@ function embed_facebook_block_view($delta) {
     'content' => '',  
   );
   $css_options = array(
+    'type' => 'file',  
     'group' => CSS_DEFAULT,
+    'data' => EMBED_FACEBOOK_PATH . '/',
   );
-  $css_path = EMBED_FACEBOOK_PATH . '/';
   // Like button block
   if ($delta == 'like') {
     $block['content']['like_button'] = array(
-      '#theme' => 'embed_facebook__like',
+      '#theme' => 'embed_facebook',
       '#type' => 'like',
       '#layout' => 'box_count',
       '#faces' => 'true',  
     );
-    $css_path .= 'css/embed-facebook-like-block.css';
+    $css_options['data'] .= 'css/embed-facebook-like-block.css';
   }
   // Send button block
   elseif ($delta == 'send') {
     $block['content']['send_button'] = array(
-      '#theme' => 'embed_facebook__send',
+      '#theme' => 'embed_facebook',
       '#type' => 'send',
       '#colorscheme' => 'light',
     );
-    $css_path .= 'css/embed-facebook-send.css';
+    $css_options['data'] .= 'css/embed-facebook-send-block.css';
   }
   // Follow button block
   elseif ($delta == 'follow') {
     $block['content']['follow_button'] = array(
-      '#theme' => 'embed_facebook__follow',
+      '#theme' => 'embed_facebook',
       '#type' => 'follow',
       '#layout' => 'box_count',
       '#url' => 'https://www.facebook.com/zuck'  
     );
-    $css_path .= 'css/embed-facebook-follow.css';
+    $css_options['data'] .= 'css/embed-facebook-follow-block.css';
   }
-  $block['content']['#attached']['css'][$css_path] = $css_options;
-  // Fix for ctools/panels bug when returning render arrays in 'normal' blocks:
+  $block['content']['#attached']['css'] = $css_options;
+  // Fix for ctools/panels bug when returning render arrays in 'normal' blocks.
+  // To work around the bug, just render the content before returning the block.
   // See: https://drupal.org/node/1991562
   $block['content'] = drupal_render($block['content']);
   return $block;
@@ -134,7 +136,8 @@ function embed_facebook_theme($existing, $type, $theme, $path) {
   return array(
     'embed_facebook' => array(
       'variables' => array(
-        'type' => 'like',  
+        'type' => 'like',
+        'display_type' => 'block',  
         'url' => '',
         'send' => 'false',  
         'colorscheme' => 'light',
@@ -181,6 +184,13 @@ function template_preprocess_embed_facebook(&$variables) {
   elseif ($variables['type'] == 'follow') {
     $variables['classes_array'][] = 'fb-follow';
   }
+  // Setup theme hook suggestions.
+  // Ordered from general in the top to more specific in the bottom.
+  $variables['theme_hook_suggestions'] += array(
+    'embed_facebook__' . $variables['display_type'],
+    'embed_facebook__' . $variables['type'],
+    'embed_facebook__' . $variables['display_type'] . '__' . $variables['type'],  
+  );
 }
 
 /**
