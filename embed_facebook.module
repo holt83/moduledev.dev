@@ -41,7 +41,7 @@ function embed_facebook_page_build(&$page) {
  * and passes it to the page as a Javascript variable. This url is used when the
  * facebook Javascript sdk is loaded.
  */
-function embed_facebook_preprocess_page(&$variables) {
+function embed_facebook_preprocess_html(&$variables) {
   $css_options = array(
     'group' => CSS_DEFAULT,
     'every_page' => TRUE,  
@@ -185,7 +185,7 @@ function template_preprocess_embed_facebook(&$variables) {
     $variables['classes_array'][] = 'fb-follow';
   }
   // Setup theme hook suggestions.
-  // Ordered from general in the top to more specific in the bottom.
+  // Ordered from general in the top to more specific in the bottom of array.
   $variables['theme_hook_suggestions'] += array(
     'embed_facebook__' . $variables['display_type'],
     'embed_facebook__' . $variables['type'],
@@ -197,7 +197,7 @@ function template_preprocess_embed_facebook(&$variables) {
  * Implements hook_ctools_plugin_directory().
  */
 function embed_facebook_ctools_plugin_directory($module, $plugin) {
-  if ($module == 'ctools' && $plugin == 'content_types') {
+  if (($module == 'ctools' || $module == 'panels') && $plugin == 'content_types') {
     return 'plugins/content_types';
   }
 }

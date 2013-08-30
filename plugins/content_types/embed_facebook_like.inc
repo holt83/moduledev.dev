@@ -33,8 +33,8 @@ function embed_facebook_like_render($subtype, $conf, $args, $context) {
     '#action' => empty($conf['action']) ? 'like' : $conf['action'],
     '#layout' => empty($conf['layout']) ? 'standard' : $conf['layout'],  
     '#colorscheme' => empty($conf['colorscheme']) ? 'light' : $conf['colorscheme'],
-    '#send' => isset($conf['send']) ? _convert_int_to_bool_value($conf['send']) : 0,
-    '#faces' => isset($conf['faces']) ? _convert_int_to_bool_value($conf['faces']) : 0,  
+    '#send' => isset($conf['send']) ? ($conf['send'] == 1 ? 'true' : 'false') : 'false',
+    '#faces' => isset($conf['faces']) ? ($conf['send'] == 1 ? 'true' : 'false') : 'false',  
   );
   return $block;
 }
@@ -137,8 +137,5 @@ function embed_facebook_like_edit_form_submit($form, &$form_state) {
  * 'true' if integer value is not 0.
  */
 function _convert_int_to_bool_value($int) {
-  if ($int == 1) {
-    return 'true';
-  }
-  return 'false';
+  return $int == 1 ? 'true' : 'false';
 }
