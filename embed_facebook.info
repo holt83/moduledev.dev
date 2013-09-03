@@ -2,4 +2,3 @@ name = Embed Facebook
 description = Embed various facebook-plugins
 core = 7.x
 files[] = embed_facebook.module
-;dependencies[] = ctools
