@@ -119,7 +119,7 @@ function embed_facebook_block_view($delta) {
     );
     $css_options['data'] .= 'css/embed-facebook-follow-block.css';
   }
-  $block['content']['#attached']['css'] = $css_options;
+  $block['content']['#attached']['css'][] = $css_options;
   // Fix for ctools/panels bug when returning render arrays in 'normal' blocks.
   // To work around the bug, just render the content before returning the block.
   // See: https://drupal.org/node/1991562
