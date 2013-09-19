@@ -9,7 +9,6 @@ function artwork_overview_types() {
     $label = t('View @type', array('@type' => $info->name));
     $items[] = l($label, 'admin/structure/artworks/manage/' . $type_url_str);
   }
-
   return theme('item_list', array('items' => $items));
 }
 

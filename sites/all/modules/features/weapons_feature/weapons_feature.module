@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Weapons Feature feature.
+ */
+
+include_once 'weapons_feature.features.inc';
