@@ -28,14 +28,47 @@ function twitpic_menu() {
     'descripttion' => t('Displays a Twitpic image, munged in various ways 
                         (cropped, rotated, etc.'),
     'page callback' => 'twitpic_image_munge',
-    'access arguments' => array('access content'),
+    'access arguments' => array('access_content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['twitpic/view'] = array(
+    'title' => 'View a Twitpic image',
+    'description' => t('Displays a Twitpic image, given an ID'),
+    'page callback' => 'twitpic_image_view',
+    'access arguments' => array('access_content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['twitpic/style'] = array(
+    'title' => 'Munge a Twitpic image according to an image style',
+    'description' => t('Displays a Twitpic image, munged by an image style'),
+    'page callback' => 'twitpic_image_style',
+    'access arguments' => array('access_content'),
     'type' => MENU_CALLBACK,
   );
   return $items;
 }
 
 /**
- * Menu callback (/twitpic/munge/%/%)
+ * Menu callback (/twitpic/view/%).
+ * 
+ * View an image from Twitpic.
+ * 
+ * Note this function does not return anything and does not display the image
+ * in the context of your Drupal site. It simply displays the image itself and
+ * nothing else. This is just used as a demonstration of how file_transfer() and
+ * stream wrappers work.
+ * 
+ * @param $id
+ *   The image id extracted from the URL.
+ * @param $size
+ *   The image size. This can either be 'thumb' or 'mini'.
+ */   
+function twitpic_image_view($id, $size) {
+  file_transfer('twitpic://' . $id . '/' . $size, array('content-type' => 'image/jpeg'));
+}
+
+/**
+ * Menu callback (/twitpic/munge/%/%).
  * 
  * Munge an image from Twitpic applying a resize, crop or rotate to it.
  * 
