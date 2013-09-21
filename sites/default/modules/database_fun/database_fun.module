@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * @file 
+ * Contains various experiments with Drupal's database API.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+ function database_fun_menu() {
+   $items = array();
+   $items['database-fun'] = array(
+     'title' => 'Database Fun',
+     'description' => t('Experiments with Drupal\'s database layer.'),
+     'page callback' => 'database_fun_experiments',
+     'access callback' => TRUE,
+     'type' => MENU_CALLBACK,
+   );
+   return $items;
+ }
+ 
+ /**
+  * Menu callback.
+  */
+ function database_fun_experiments($experiment_nr) {
+   if (!isset($experiment_nr)) {
+     return t('Please supply an experiment nr.');
+   }
+   switch ($experiment_nr) {
+     case 1:
+       return _run_experiment_1();   
+       break;
+   }
+ }
+ 
+ /**
+  * Experiment 1
+  */
+ function _run_experiment_1() {
+   $output = '';
+   // Fetch a list with all enabled modules using db_query:
+   $result = db_query("SELECT name, filename FROM {system} WHERE type = :type AND status = :status", array(
+     ':type' => 'module',
+     ':status' => 1,
+   ));
+   file_put_contents("/home/drupalpro/debug/debug.txt", print_r($result, TRUE), FILE_APPEND);
+   return $output;
+ }
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  

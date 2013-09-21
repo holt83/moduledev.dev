@@ -1,0 +1,5 @@
+name = Database Fun
+description = Experiments with Drupal's database api.
+core = 7.x
+package = Drupal 7 development
+files[] = database_fun.module
