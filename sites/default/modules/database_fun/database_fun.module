@@ -25,54 +25,52 @@
   */
  function database_fun_experiments($experiment_nr = NULL) {
    if (!isset($experiment_nr)) {
-     return '';
+     return '<h3>Please enter an experiment number in the URL (/database-fun/%experiment_nr).</h3>';
    }
-   $output = '';
    switch ($experiment_nr) {
      case 1:
-       $output = _run_experiment_1();   
+       return _run_experiment_1();   
        break;
      case 2:
-       $output = _run_experiment_2();
+       return _run_experiment_2();
        break;
+     case 3:
+       return _run_experiment_3();
+     default:
+       return '<h3>There\'s no experiments going on here ;)</h3>';
    }
-   return $output;
  }
  
  /**
   * Experiment 1
   * 
-  * Fetch enabled modules with a basic db_query() call.
+  * Fetch enabled modules with a basic db_query() select.
   */
  function _run_experiment_1() {
-   // Fetch a list with all enabled modules using a basic db_query.
-   $result = db_query("SELECT name, filename FROM {system} WHERE type = :type AND status = :status", array(
+  // Fetch a list with all enabled modules using a basic db_query.
+  $result = db_query("SELECT name, filename FROM {system} WHERE type = :type AND status = :status", array(
      ':type' => 'module',
      ':status' => 1,
-   ));
-   $items = array();
-   // Iterate over each record and build $items array for item_list theme.
-   foreach ($result as $record) {
-     $items[] = t('<strong>Module name</strong> : @name | <strong>Module file</strong> : @filename', array(
-       '@name' => $record->name,
-       '@filename' => $record->filename,
-     ));
-   }
-   $variables = array(
-     'title' => t('Enabled Modules fetched with a basic db_query:'),
-     'type' => 'ul',
-     'items' => $items,
-   );
-   return theme('item_list', $variables);
+  ));
+  $items = array();
+  // Iterate over each record and build $items array for item_list theme.
+  foreach ($result as $record) {
+    $items[] = t('<strong>Module name</strong> : @name | <strong>Module file</strong> : @filename', array(
+      '@name' => $record->name,
+      '@filename' => $record->filename,
+    ));
+  }
+  $list_title = t('Enabled Modules fetched with a basic db_query:');
+  return _setup_experiment_render_array('Experiment 1', $list_title, 'ul', $items);
 }
 
 /**
  * Experiment 2
  * 
- * Dynamic queries.
+ * Dynamic select query.
  * 
  * In this experiment we employ Drupal's query builder mechanism, to see how
- * this can be used to build a dynamic query.
+ * this can be used to build a dynamic select query.
  * 
  * Reasons to use a dynamic query over a the static db_query() :
  * - The query may change depending on user-data.
@@ -89,7 +87,8 @@ function _run_experiment_2() {
   // Below we tell the query object to use a select on the fields in the second 
   // parameter from the table in the first.
   $query->fields('n', array('nid', 'title'));
-  // This will effectivily result in the following query:
+  // The effective query now looks like:
+  //
   // SELECT n.nid as nid, n.title as title FROM {node} n
   
   // Next we perform an inner join agianst users table.
@@ -100,14 +99,151 @@ function _run_experiment_2() {
   // change it in hook_query_alter(). Therefore we use the wildcard '%alias in
   // the join condition. 
   // All join() methods return the actual alias used in the condition, and 
-  // above we store that in a variable for later use.
+  // above we store that in a variable for later use below.
+  
+  // Here we use the $users_alias we got from above, to add the 'name' field  
+  // from the {users} table to the query and alias it to 'username'. 
+  $query->addField($users_alias, 'name', 'username');
+  
+  // Like the join() methods the addField() method also returns the actual 
+  // alias used, since, like before, we can't be sure that 'username' is used
+  // in the final query. We ignore it here since it's just an experiment.
+  //
+  // The effective query now looks like:
+  //
+  // SELECT n.nid as nid, n.title as title, u.name as username FROM {node} n
+  // INNER JOIN {users} u ON u.uid = n.uid
+  
+  // So far we have constructed the select part of the query, joined the {node} 
+  // table with {users} table on 'nid' and added the 'name' field from the 
+  // {users} table.
+  // To add WHERE clauses to the query the condition() method can be used on
+  // the query builder object. Below a condition is added:
+  $query->condition('n.created', REQUEST_TIME - (7 * 24 * 60 * 60), '>=');
+  // The conditions() method takes a field name, a value to match against and  
+  // an optional operator as parameters. If no operatores is supplied the
+  // default opertation is equals. 
+  // In the condition we limit the result to only include nodes created in the 
+  // past seven days.
+  
+  // Tell the query builder to order the result set by creation time descending
+  // and to limit the result to 5 records starting from 0, giving us the 5 most 
+  // recently created nodes.
+  $query->orderBy('n.created', 'DESC');
+  $query->range(0, 5);
+  // The effective query now looks like:
+  //
+  // SELECT n.nid as nid, n.title as title, u.name as username
+  // FROM {node} n INNER JOIN {users} u ON u.uid = n.uid
+  // WHERE (n.created >= REQUEST_TIME - (7 * 24 * 60 * 60) AND (u.name = 'Bob')
+  // ORDER BY n.created DESC
+  // LIMIT 5 OFFSET 0
+  
+  // To make dynamic queries even more flexible other modules are giving a 
+  // chance to alter the query builder object, before the query is turned into
+  // a SQL string and executed on the database. 
+  // Every enabled module that implements hook_query_alter() is notified
+  // everytime a query builder object is executed. This gives modules a chance
+  // to add general changes to all queries being executed.
+  // Below we use the addTag() method on the query builder. 
+  $query->addTag('node_access'); 
+  // When dynamic queries is tagged, enabled modules implementing 
+  // hook_query_TAG_alter() will be notified, giving modules a chance act on  
+  // groups of queries for more specific changes. Above the 'node_access' tag
+  // is added to the query, which is very important because it allows modules
+  // implementing node access rights to act on the query via
+  // hook_query_node_access_alert() where the 'node_access' part is the tag of
+  // the query. This tag should be added everytime a dynamic query is build on
+  // the {node} table, to prevent users accessing content they shouldn't have
+  // access to.
+  
+  // Finally the query builder is ready to be executed:
+  $result = $query->execute();
+  
+  // Prepare the result records for the item_list and return the themed result.
+  $items = array();
+  foreach ($result as $record) {
+    $items[] = t('Node title: @title, Owner Name: @username', array(
+      '@title' => $record->title,
+      // If username is empty it is an anonymous user.
+      '@username' => empty($record->username) ? 'Anonymous' : $record->username,
+    ));
+  }
+  $list_title = t('The 5 newest created nodes within the past 7 days fetched with a dynamic query:');
+  return _setup_experiment_render_array('Experiment 2', $list_title, 'ul', $items);
+}
+
+
+/**
+ * Experiment 3.
+ * 
+ * Dynamic select query.
+ * 
+ * This experiment is essentially the same as experiment 2, but here we use 
+ * object chaning to make the code much more compact.
+ */
+function _run_experiment_3() {
+  $query = db_select('node', 'n');
+  $users_alias = $query->innerJoin('users', 'u', '%alias.uid = n.uid');
+  $query->addField($users_alias, 'name', 'username');
+  $result = $query
+    ->fields('n', array('nid', 'title'))
+    ->condition('n.created', REQUEST_TIME - (7 * 24 * 60 * 60), '>=')
+    ->orderBy('n.created', 'DESC')
+    ->range(0, 10)
+    ->addTag('node_access')
+    ->execute();
+  $items = array();
+  foreach ($result as $record) {
+    $items[] = t('Node title: @title, Owner Name: @username', array(
+      '@title' => $record->title,
+      '@username' => empty($record->username) ? 'Anonymous' : $record->username,
+    ));
+  }
+  $list_title = t('The 10 newest created nodes within the past 7 days fetched with a dynamic query:');
+  return _setup_experiment_render_array('Experiment 3', $list_title, 'ul', $items);
+}
+
+/**
+ * Experiment 4.
+ * 
+ * Dynamic insert query.
+ * 
+ * Experiment using Drupal's query builder mechanism to build dynamic insert
+ * queries.
+ */
+function _run_experiment_4() {
+  // Start with the db_insert construtor function and then use method chaining
+  // to setup the insert query.
+  $id = db_insert('imports')
+    ->fields(array(
+      'name' => 'Simon Holt',
+      'adress' => 'Schaldemosevej 15 st.th.',
+      'phone' => '555-1243',
+    ))
+    ->execute();
+  // If there is an auto-increment field on the {imports} table the generated
+  // ID is the $id returned from the db_insert() method.
   
 }
- 
- 
- 
- 
- 
+
+function _setup_experiment_render_array($title, $list_title, $type, $items) {
+  $render_array = array();
+  $render_array['experiment_title'] = array(
+    '#prefix' => '<h2>',
+    '#suffix' => '</h2>',
+    '#markup' => $title,
+  );
+  $variables = array(
+    'title' => $list_title,
+    'type' => $type,
+    'items' => $items,
+  );
+  $render_array['experiment_result'] = array(
+    '#markup' => theme('item_list', $variables),
+  ); 
+  return $render_array;
+}
  
  
  
