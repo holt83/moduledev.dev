@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * Defines the Watermark module.
+ */
+
+/**
+ * Implements hook_image_effect_info().
+ */
+ function watermark_image_effect_info() {
+   $effects = array();
+   
+   return $effects;
+ }
