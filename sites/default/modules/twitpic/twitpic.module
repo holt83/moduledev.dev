@@ -64,7 +64,15 @@ function twitpic_menu() {
  *   The image size. This can either be 'thumb' or 'mini'.
  */   
 function twitpic_image_view($id, $size) {
-  file_transfer('twitpic://' . $id . '/' . $size, array('content-type' => 'image/jpeg'));
+  $sizes = array('thumb', 'mini');
+  if (!in_array($size, $sizes)) {
+    return t('');
+  }
+  $twitpic_uri = 'twitpic://' . $id . '/' . $size;
+  $local_uri = 'public://' . $id . '_' . $size . '.jpg';
+  $twitpic_image = file_get_contents($twitpic_uri);
+  file_unmanaged_save_data($twitpic_image, $local_uri, FILE_EXISTS_REPLACE);
+  return theme('image', array('path' => $local_uri));  
 }
 
 /**
@@ -117,8 +125,29 @@ function twitpic_image_munge($id, $operation = 'rotate') {
   return theme('image', array('path' => $local_uri));
 }  
 
+/**
+ * Menu callback (/twitpic/style/%/%).
+ * 
+ * Munge an image from Twitpic by applying a premade style to it.
+ * 
+ * @param $id
+ *   The image id extracted from the URL.
+ * @param $style
+ *   The specified style from the URL.
+ */
+function twitpic_image_style($id, $style) {
+  $styles = image_styles();
+  if (!array_key_exists($style, $styles)) {
+    return;
+  }
+  
+  $twitpic_uri = 'twitpic://' . $id . '/thumb';
+  $local_uri = 'public://' . $id . '_' . $style . '.jpg';
+  $twitpic_image = file_get_contents($twitpic_uri);
+  $local_path = file_unmanaged_save_data($twitpic_image, $local_uri, FILE_EXISTS_REPLACE);
 
-
+  return theme('image_style', array('path' => $local_path));
+}
 
 
 
