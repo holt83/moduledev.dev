@@ -10,6 +10,6 @@ function twitpic_stream_wrappers() {
       'class' => 'TwitpicStreamWrapper',
       'description' => t('Photos from the Twitpic hosting service.'),
       'type' => STREAM_WRAPPERS_READ_VISIBLE,  
-    ),  
+    ),
   );
 }
