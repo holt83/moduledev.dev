@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file 
+ * Defines the Twitpic module.
+ */
 
 /**
  * Implements hook_stream_wrappers().
@@ -13,3 +17,84 @@ function twitpic_stream_wrappers() {
     ),
   );
 }
+
+/**
+ * Implements hook_menu().
+ */
+function twitpic_menu() {
+  $items = array();
+  $items['twitpic/munge'] = array(
+    'title' => 'Munge a Twitpic image',
+    'descripttion' => t('Displays a Twitpic image, munged in various ways 
+                        (cropped, rotated, etc.'),
+    'page callback' => 'twitpic_image_munge',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Menu callback (/twitpic/munge/%/%)
+ * 
+ * Munge an image from Twitpic applying a resize, crop or rotate to it.
+ * 
+ * Note this function does not return anything and does not display the image
+ * in the context of your Drupal site. It simply displays the image itself and
+ * nothing else. This is just used as a demonstration of how file_transfer(), 
+ * image api functions, and stream wrappers work.
+ * 
+ * @param $id
+ *   The image's id extracted from the URL.
+ * @param $operation
+ *   An operation to perform on the image, can be rotate, scale or desaturate.
+ */
+function twitpic_image_munge($id, $operation = 'rotate') {
+  // If we get a disallowed option just return.
+  $operations = array('rotate', 'scale', 'desaturate');
+  if (!in_array($operation, $operations)) {
+    return;
+  }
+  
+  $twitpic_uri = 'twitpic://' . $id . '/thumb';
+  $local_uri = 'public://' . $id . '.jpg';
+  $twitpic_image = file_get_contents($twitpic_uri);
+  if (!$twitpic_image) {
+    return;
+  }
+  $local_path = file_unmanaged_save_data($twitpic_image, $local_uri, FILE_EXISTS_REPLACE);
+  // Get a Drupal image object that we can pass to the image style functions.
+  $local_image = image_load($local_path);
+
+  switch ($operation) {
+    case 'scale':
+      image_scale($local_image, NULL, 50, FALSE);
+      break;
+    case 'desaturate':
+      image_desaturate($local_image);
+      break;
+    case 'rotate':
+      image_rotate($local_image, 45, 0x7D26CD);
+      break;
+  }
+  
+  $local_uri = drupal_tempnam('public://', $id);
+  image_save($local_image, $local_uri);
+  
+  return theme('image', array('path' => $local_uri));
+}  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
