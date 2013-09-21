@@ -8,9 +8,8 @@ sites/*/private
 # Ignore eclipse workspace settings and buildpath
 .buildpath
 .project
-.settings/*
+.settings
 
 # Ignore nested repositories.
-sites/default/modules/embed_facebook
-sites/default/modules/ding_navigation_box
+
 
