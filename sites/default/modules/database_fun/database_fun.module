@@ -23,30 +23,86 @@
  /**
   * Menu callback.
   */
- function database_fun_experiments($experiment_nr) {
+ function database_fun_experiments($experiment_nr = NULL) {
    if (!isset($experiment_nr)) {
-     return t('Please supply an experiment nr.');
+     return '';
    }
+   $output = '';
    switch ($experiment_nr) {
      case 1:
-       return _run_experiment_1();   
+       $output = _run_experiment_1();   
+       break;
+     case 2:
+       $output = _run_experiment_2();
        break;
    }
+   return $output;
  }
  
  /**
   * Experiment 1
+  * 
+  * Fetch enabled modules with a basic db_query() call.
   */
  function _run_experiment_1() {
-   $output = '';
-   // Fetch a list with all enabled modules using db_query:
+   // Fetch a list with all enabled modules using a basic db_query.
    $result = db_query("SELECT name, filename FROM {system} WHERE type = :type AND status = :status", array(
      ':type' => 'module',
      ':status' => 1,
    ));
-   file_put_contents("/home/drupalpro/debug/debug.txt", print_r($result, TRUE), FILE_APPEND);
-   return $output;
- }
+   $items = array();
+   // Iterate over each record and build $items array for item_list theme.
+   foreach ($result as $record) {
+     $items[] = t('<strong>Module name</strong> : @name | <strong>Module file</strong> : @filename', array(
+       '@name' => $record->name,
+       '@filename' => $record->filename,
+     ));
+   }
+   $variables = array(
+     'title' => t('Enabled Modules fetched with a basic db_query:'),
+     'type' => 'ul',
+     'items' => $items,
+   );
+   return theme('item_list', $variables);
+}
+
+/**
+ * Experiment 2
+ * 
+ * Dynamic queries.
+ * 
+ * In this experiment we employ Drupal's query builder mechanism, to see how
+ * this can be used to build a dynamic query.
+ * 
+ * Reasons to use a dynamic query over a the static db_query() :
+ * - The query may change depending on user-data.
+ * - Modules should have a chance to alter the query.
+ * - We want to take advantages of database feature that is implemented
+ *   differently on different databases.
+ */
+function _run_experiment_2() {
+  // First we create a new query object with db_select().
+  // The first parameter is the name of the base table of the query.
+  // The second parameter is the alias for the base table in the query.
+  $query = db_select('node', 'n');
+  
+  // Below we tell the query object to use a select on the fields in the second 
+  // parameter from the table in the first.
+  $query->fields('n', array('nid', 'title'));
+  // This will effectivily result in the following query:
+  // SELECT n.nid as nid, n.title as title FROM {node} n
+  
+  // Next we perform an inner join agianst users table.
+  $users_alias = $query->innerJoin('users', 'u', '%alias.uid = n.uid');
+  // Even though we tell the query to use the alias 'u', we can't be sure that
+  // this is the actual alias that will be used in the final query. Since it's 
+  // a dynamic query, the alias might allready be taken or some modules might
+  // change it in hook_query_alter(). Therefore we use the wildcard '%alias in
+  // the join condition. 
+  // All join() methods return the actual alias used in the condition, and 
+  // above we store that in a variable for later use.
+  
+}
  
  
  
