@@ -1,0 +1,1520 @@
+[1mdiff --git a/sites/all/modules/ctools/API.txt b/sites/all/modules/ctools/API.txt[m
+[1mindex 2df7e22..e0441d6 100644[m
+[1m--- a/sites/all/modules/ctools/API.txt[m
+[1m+++ b/sites/all/modules/ctools/API.txt[m
+[36m@@ -1,8 +1,12 @@[m
+[31m-Current API Version: 2.0.5[m
+[32m+[m[32mCurrent API Version: 2.0.8[m
+ [m
+ Please note that the API version is an internal number and does not match release numbers. It is entirely possible that releases will not increase the API version number, and increasing this number too often would burden contrib module maintainers who need to keep up with API changes.[m
+ [m
+ This file contains a log of changes to the API.[m
+[32m+[m[32mAPI Version 2.0.8[m
+[32m+[m[32m  Introduce ctools_class_add().[m
+[32m+[m[32m  Introduce ctools_class_remove().[m
+[32m+[m
+ API Version 2.0.7[m
+   All ctools object cache database functions can now accept session_id as an optional[m
+   argument to facilitate using non-session id keys.[m
+[1mdiff --git a/sites/all/modules/ctools/bulk_export/bulk_export.info b/sites/all/modules/ctools/bulk_export/bulk_export.info[m
+[1mindex 790561c..d27ea9a 100644[m
+[1m--- a/sites/all/modules/ctools/bulk_export/bulk_export.info[m
+[1m+++ b/sites/all/modules/ctools/bulk_export/bulk_export.info[m
+[36m@@ -4,9 +4,9 @@[m [mcore = 7.x[m
+ dependencies[] = ctools[m
+ package = Chaos tool suite[m
+ [m
+[31m-; Information added by drupal.org packaging script on 2012-08-08[m
+[31m-version = "7.x-1.1"[m
+[32m+[m[32m; Information added by drupal.org packaging script on 2013-04-03[m
+[32m+[m[32mversion = "7.x-1.3"[m
+ core = "7.x"[m
+ project = "ctools"[m
+[31m-datestamp = "1344463011"[m
+[32m+[m[32mdatestamp = "1365013512"[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/css/button.css b/sites/all/modules/ctools/css/button.css[m
+[1mindex 91a6044..15e484b 100644[m
+[1m--- a/sites/all/modules/ctools/css/button.css[m
+[1m+++ b/sites/all/modules/ctools/css/button.css[m
+[36m@@ -1,4 +1,3 @@[m
+[31m-/* $Id$ */[m
+ [m
+ .ctools-button-processed {[m
+   border-style: solid;[m
+[36m@@ -29,4 +28,4 @@[m
+ .ctools-button li a {[m
+   padding-left: 12px;[m
+   padding-right: 12px;[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/sites/all/modules/ctools/css/dropbutton.css b/sites/all/modules/ctools/css/dropbutton.css[m
+[1mindex 7825111..5e3ea24 100644[m
+[1m--- a/sites/all/modules/ctools/css/dropbutton.css[m
+[1m+++ b/sites/all/modules/ctools/css/dropbutton.css[m
+[36m@@ -1,4 +1,3 @@[m
+[31m-/* $Id$ */[m
+ [m
+ .ctools-dropbutton-processed {[m
+   padding-right: 18px;[m
+[1mdiff --git a/sites/all/modules/ctools/ctools-n1925018-12.patch b/sites/all/modules/ctools/ctools-n1925018-12.patch[m
+[1mdeleted file mode 100644[m
+[1mindex 0eebb3e..0000000[m
+[1m--- a/sites/all/modules/ctools/ctools-n1925018-12.patch[m
+[1m+++ /dev/null[m
+[36m@@ -1,35 +0,0 @@[m
+[31m-diff --git a/plugins/content_types/block/block.inc b/plugins/content_types/block/block.inc[m
+[31m-index 9d55e8a..ae70db5 100644[m
+[31m---- a/plugins/content_types/block/block.inc[m
+[31m-+++ b/plugins/content_types/block/block.inc[m
+[31m-@@ -286,13 +286,24 @@ function ctools_block_content_type_admin_info($subtype, $conf) {[m
+[31m-   list($module, $delta) = _ctools_block_get_module_delta($subtype, $conf);[m
+[31m-   $block = (object) module_invoke($module, 'block_view', $delta);[m
+[31m- [m
+[31m--  // Sanitize the block because <script> tags can hose javascript up:[m
+[31m--  if (!empty($block->content)) {[m
+[31m--    $block->content = filter_xss_admin($block->content);[m
+[31m--  }[m
+[31m-+  // Only proceed if a block was returned.[m
+[31m-+  if (!empty($block)) {[m
+[31m-+    // Sanitize the block because <script> tags can hose javascript up.[m
+[31m-+    if (!empty($block->content)) {[m
+[31m-+      // If this isn't a simple string then it needs to be rendered first.[m
+[31m-+      if (!is_string($block->content)) {[m
+[31m-+        $block->content = drupal_render($block->content);[m
+[31m-+      }[m
+[31m-+      $block->content = filter_xss_admin($block->content);[m
+[31m-+    }[m
+[31m-+[m
+[31m-+    if (!empty($block->subject)) {[m
+[31m-+      $block->title = $block->subject;[m
+[31m-+    }[m
+[31m-+    elseif (empty($block->title)) {[m
+[31m-+      $block->title = t('No title');[m
+[31m-+    }[m
+[31m- [m
+[31m--  if (!empty($block) && !empty($block->subject)) {[m
+[31m--    $block->title = $block->subject;[m
+[31m-     return $block;[m
+[31m-   }[m
+[31m- }[m
+[1mdiff --git a/sites/all/modules/ctools/ctools.api.php b/sites/all/modules/ctools/ctools.api.php[m
+[1mindex 1aef57c..a7ab783 100644[m
+[1m--- a/sites/all/modules/ctools/ctools.api.php[m
+[1m+++ b/sites/all/modules/ctools/ctools.api.php[m
+[36m@@ -203,5 +203,66 @@[m [mfunction hook_ctools_content_subtype_alter($subtype, $plugin) {[m
+ }[m
+ [m
+ /**[m
+[32m+[m[32m * Alter the definition of an entity context plugin.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param array $plugin[m
+[32m+[m[32m *   An associative array defining a plugin.[m
+[32m+[m[32m * @param array $entity[m
+[32m+[m[32m *   The entity info array of a specific entity type.[m
+[32m+[m[32m * @param string $plugin_id[m
+[32m+[m[32m *   The plugin ID, in the format NAME:KEY.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction hook_ctools_entity_context_alter(&$plugin, &$entity, $plugin_id) {[m
+[32m+[m[32m  ctools_include('context');[m
+[32m+[m[32m  switch ($plugin_id) {[m
+[32m+[m[32m    case 'entity_id:taxonomy_term':[m
+[32m+[m[32m      $plugin['no ui'] = TRUE;[m
+[32m+[m[32m    case 'entity:user':[m
+[32m+[m[32m      $plugin = ctools_get_context('user');[m
+[32m+[m[32m      unset($plugin['no ui']);[m
+[32m+[m[32m      unset($plugin['no required context ui']);[m
+[32m+[m[32m      break;[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Alter the definition of entity context plugins.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param array $plugins[m
+[32m+[m[32m *   An associative array of plugin definitions, keyed by plugin ID.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @see hook_ctools_entity_context_alter()[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction hook_ctools_entity_contexts_alter(&$plugins) {[m
+[32m+[m[32m  $plugins['entity_id:taxonomy_term']['no ui'] = TRUE;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Change cleanstring settings.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param array $settings[m
+[32m+[m[32m *   An associative array of cleanstring settings.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @see ctools_cleanstring()[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction hook_ctools_cleanstring_alter(&$settings) {[m
+[32m+[m[32m  // Convert all strings to lower case.[m
+[32m+[m[32m  $settings['lower case'] = TRUE;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Change cleanstring settings for a specific clean ID.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param array $settings[m
+[32m+[m[32m *   An associative array of cleanstring settings.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @see ctools_cleanstring()[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction hook_ctools_cleanstring_CLEAN_ID_alter(&$settings) {[m
+[32m+[m[32m  // Convert all strings to lower case.[m
+[32m+[m[32m  $settings['lower case'] = TRUE;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+  * @} End of "addtogroup hooks".[m
+  */[m
+[1mdiff --git a/sites/all/modules/ctools/ctools.info b/sites/all/modules/ctools/ctools.info[m
+[1mindex 2ccf719..8a7b0b6 100644[m
+[1m--- a/sites/all/modules/ctools/ctools.info[m
+[1m+++ b/sites/all/modules/ctools/ctools.info[m
+[36m@@ -6,9 +6,9 @@[m [mfiles[] = includes/context.inc[m
+ files[] = includes/math-expr.inc[m
+ files[] = includes/stylizer.inc[m
+ [m
+[31m-; Information added by drupal.org packaging script on 2012-08-08[m
+[31m-version = "7.x-1.1"[m
+[32m+[m[32m; Information added by drupal.org packaging script on 2013-04-03[m
+[32m+[m[32mversion = "7.x-1.3"[m
+ core = "7.x"[m
+ project = "ctools"[m
+[31m-datestamp = "1344463011"[m
+[32m+[m[32mdatestamp = "1365013512"[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/ctools.install b/sites/all/modules/ctools/ctools.install[m
+[1mindex 4a6f55c..1f961f1 100644[m
+[1m--- a/sites/all/modules/ctools/ctools.install[m
+[1m+++ b/sites/all/modules/ctools/ctools.install[m
+[36m@@ -26,7 +26,7 @@[m [mfunction ctools_requirements($phase) {[m
+     }[m
+ [m
+     if (!function_exists('error_get_last')) {[m
+[31m-  	  $requirements['ctools_php_52']['title'] = t('CTools PHP requirements');[m
+[32m+[m[32m      $requirements['ctools_php_52']['title'] = t('CTools PHP requirements');[m
+       $requirements['ctools_php_52']['description'] = t('CTools requires certain features only available in PHP 5.2.0 or higher.');[m
+       $requirements['ctools_php_52']['severity'] = REQUIREMENT_WARNING;[m
+       $requirements['ctools_php_52']['value'] = t('PHP !version', array('!version' => phpversion()));[m
+[36m@@ -52,6 +52,14 @@[m [mfunction ctools_schema_2() {[m
+   // update the 'name' field to be 128 bytes long:[m
+   $schema['ctools_object_cache']['fields']['name']['length'] = 128;[m
+ [m
+[32m+[m[32m  // Update the 'data' field to be type 'blob'.[m
+[32m+[m[32m  $schema['ctools_object_cache']['fields']['data'] = array([m
+[32m+[m[32m    'type' => 'blob',[m
+[32m+[m[32m    'size' => 'big',[m
+[32m+[m[32m    'description' => 'Serialized data being stored.',[m
+[32m+[m[32m    'serialize' => TRUE,[m
+[32m+[m[32m  );[m
+[32m+[m
+   // DO NOT MODIFY THIS TABLE -- this definition is used to create the table.[m
+   // Changes to this table must be made in schema_3 or higher.[m
+   $schema['ctools_css_cache'] = array([m
+[36m@@ -194,4 +202,18 @@[m [mfunction ctools_update_6007() {[m
+   return $ret;[m
+ }[m
+ [m
+[31m-[m
+[32m+[m[32m/**[m
+[32m+[m[32m * ctools_object_cache needs to be defined as a blob.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction ctools_update_6008() {[m
+[32m+[m[32m  db_delete('ctools_object_cache')[m
+[32m+[m[32m    ->execute();[m
+[32m+[m
+[32m+[m[32m  db_change_field('ctools_object_cache', 'data', 'data', array([m
+[32m+[m[32m      'type' => 'blob',[m
+[32m+[m[32m      'size' => 'big',[m
+[32m+[m[32m      'description' => 'Serialized data being stored.',[m
+[32m+[m[32m      'serialize' => TRUE,[m
+[32m+[m[32m    )[m
+[32m+[m[32m  );[m
+[32m+[m[32m}[m
+[1mdiff --git a/sites/all/modules/ctools/ctools.module b/sites/all/modules/ctools/ctools.module[m
+[1mindex 7dfc989..f014e74 100644[m
+[1m--- a/sites/all/modules/ctools/ctools.module[m
+[1m+++ b/sites/all/modules/ctools/ctools.module[m
+[36m@@ -367,6 +367,52 @@[m [mfunction ctools_set_no_blocks($blocks = FALSE) {[m
+   $status = $blocks;[m
+ }[m
+ [m
+[32m+[m[32m/**[m
+[32m+[m[32m * Add an array of classes to the body.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param mixed $classes[m
+[32m+[m[32m *   A string or an array of class strings to add.[m
+[32m+[m[32m * @param string $hook[m
+[32m+[m[32m *   The theme hook to add the class to. The default is 'html' which will[m
+[32m+[m[32m *   affect the body tag.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction ctools_class_add($classes, $hook = 'html') {[m
+[32m+[m[32m  if (!is_array($classes)) {[m
+[32m+[m[32m    $classes = array($classes);[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  $static = &drupal_static('ctools_process_classes', array());[m
+[32m+[m[32m  if (!isset($static[$hook]['add'])) {[m
+[32m+[m[32m    $static[$hook]['add'] = array();[m
+[32m+[m[32m  }[m
+[32m+[m[32m  foreach ($classes as $class) {[m
+[32m+[m[32m    $static[$hook]['add'][] = $class;[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Remove an array of classes from the body.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param mixed $classes[m
+[32m+[m[32m *   A string or an array of class strings to remove.[m
+[32m+[m[32m * @param string $hook[m
+[32m+[m[32m *   The theme hook to remove the class from. The default is 'html' which will[m
+[32m+[m[32m *   affect the body tag.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction ctools_class_remove($classes, $hook = 'html') {[m
+[32m+[m[32m  if (!is_array($classes)) {[m
+[32m+[m[32m    $classes = array($classes);[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  $static = &drupal_static('ctools_process_classes', array());[m
+[32m+[m[32m  if (!isset($static[$hook]['remove'])) {[m
+[32m+[m[32m    $static[$hook]['remove'] = array();[m
+[32m+[m[32m  }[m
+[32m+[m[32m  foreach ($classes as $class) {[m
+[32m+[m[32m    $static[$hook]['remove'][] = $class;[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+ // -----------------------------------------------------------------------[m
+ // Drupal core hooks[m
+ [m
+[36m@@ -574,6 +620,36 @@[m [mfunction ctools_page_token_processing($children, $elements) {[m
+   return $children;[m
+ }[m
+ [m
+[32m+[m[32m/**[m
+[32m+[m[32m * Implements hook_process().[m
+[32m+[m[32m *[m
+[32m+[m[32m * Add and remove CSS classes from the variables array. We use process so that[m
+[32m+[m[32m * we alter anything added in the preprocess hooks.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction ctools_process(&$variables, $hook) {[m
+[32m+[m[32m  if (!isset($variables['classes'])) {[m
+[32m+[m[32m    return;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  $classes = drupal_static('ctools_process_classes', array());[m
+[32m+[m
+[32m+[m[32m  // Process the classses to add.[m
+[32m+[m[32m  if (!empty($classes[$hook]['add'])) {[m
+[32m+[m[32m    $add_classes = array_map('drupal_clean_css_identifier', $classes[$hook]['add']);[m
+[32m+[m[32m    $variables['classes_array'] = array_unique(array_merge($variables['classes_array'], $add_classes));[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  // Process the classes to remove.[m
+[32m+[m[32m  if (!empty($classes[$hook]['remove'])) {[m
+[32m+[m[32m    $remove_classes = array_map('drupal_clean_css_identifier', $classes[$hook]['remove']);[m
+[32m+[m[32m    $variables['classes_array'] = array_diff($variables['classes_array'], $remove_classes);[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  // Since this runs after template_process(), we need to re-implode the[m
+[32m+[m[32m  // classes array.[m
+[32m+[m[32m  $variables['classes'] = implode(' ', $variables['classes_array']);[m
+[32m+[m[32m}[m
+[32m+[m
+ // -----------------------------------------------------------------------[m
+ // Menu callbacks that must be in the .module file.[m
+ [m
+[36m@@ -699,22 +775,6 @@[m [mfunction ctools_export_ui_task_access($plugin_name, $op, $item = NULL) {[m
+ }[m
+ [m
+ /**[m
+[31m- * Cache callback on behalf of ctools_export_ui.[m
+[31m- */[m
+[31m-function ctools_export_ui_context_cache_get($plugin_name, $key) {[m
+[31m-  dsm('should not be called!');[m
+[31m-  return;[m
+[31m-}[m
+[31m-[m
+[31m-/**[m
+[31m- * Cache callback on behalf of ctools_export_ui.[m
+[31m- */[m
+[31m-function ctools_export_ui_context_cache_set($plugin_name, $key, $item) {[m
+[31m-  dsm('should not be called!');[m
+[31m-  return;[m
+[31m-}[m
+[31m-[m
+[31m-/**[m
+  * Callback for access control ajax form on behalf of export ui.[m
+  *[m
+  * Returns the cached access config and contexts used.[m
+[36m@@ -815,6 +875,9 @@[m [mfunction ctools_ajax_theme_callback() {[m
+   }[m
+ }[m
+ [m
+[32m+[m[32m/**[m
+[32m+[m[32m * Implements hook_ctools_entity_context_alter().[m
+[32m+[m[32m */[m
+ function ctools_ctools_entity_context_alter(&$plugin, &$entity, $plugin_id) {[m
+   ctools_include('context');[m
+   switch ($plugin_id) {[m
+[1mdiff --git a/sites/all/modules/ctools/ctools_access_ruleset/ctools_access_ruleset.info b/sites/all/modules/ctools/ctools_access_ruleset/ctools_access_ruleset.info[m
+[1mindex 4562d7a..1019253 100644[m
+[1m--- a/sites/all/modules/ctools/ctools_access_ruleset/ctools_access_ruleset.info[m
+[1m+++ b/sites/all/modules/ctools/ctools_access_ruleset/ctools_access_ruleset.info[m
+[36m@@ -4,9 +4,9 @@[m [mcore = 7.x[m
+ package = Chaos tool suite[m
+ dependencies[] = ctools[m
+ [m
+[31m-; Information added by drupal.org packaging script on 2012-08-08[m
+[31m-version = "7.x-1.1"[m
+[32m+[m[32m; Information added by drupal.org packaging script on 2013-04-03[m
+[32m+[m[32mversion = "7.x-1.3"[m
+ core = "7.x"[m
+ project = "ctools"[m
+[31m-datestamp = "1344463011"[m
+[32m+[m[32mdatestamp = "1365013512"[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/ctools_access_ruleset/ctools_access_ruleset.install b/sites/all/modules/ctools/ctools_access_ruleset/ctools_access_ruleset.install[m
+[1mindex b1613d8..3f00877 100644[m
+[1m--- a/sites/all/modules/ctools/ctools_access_ruleset/ctools_access_ruleset.install[m
+[1m+++ b/sites/all/modules/ctools/ctools_access_ruleset/ctools_access_ruleset.install[m
+[36m@@ -17,7 +17,7 @@[m [mfunction ctools_access_ruleset_schema_1() {[m
+       'bulk export' => TRUE,[m
+       'primary key' => 'rsid',[m
+       'api' => array([m
+[31m-        'owner' => 'ctools',[m
+[32m+[m[32m        'owner' => 'ctools_access_ruleset',[m
+         'api' => 'ctools_rulesets',[m
+         'minimum_version' => 1,[m
+         'current_version' => 1,[m
+[1mdiff --git a/sites/all/modules/ctools/ctools_ajax_sample/ctools_ajax_sample.info b/sites/all/modules/ctools/ctools_ajax_sample/ctools_ajax_sample.info[m
+[1mindex 056083d..03ccb34 100644[m
+[1m--- a/sites/all/modules/ctools/ctools_ajax_sample/ctools_ajax_sample.info[m
+[1m+++ b/sites/all/modules/ctools/ctools_ajax_sample/ctools_ajax_sample.info[m
+[36m@@ -4,9 +4,9 @@[m [mpackage = Chaos tool suite[m
+ dependencies[] = ctools[m
+ core = 7.x[m
+ [m
+[31m-; Information added by drupal.org packaging script on 2012-08-08[m
+[31m-version = "7.x-1.1"[m
+[32m+[m[32m; Information added by drupal.org packaging script on 2013-04-03[m
+[32m+[m[32mversion = "7.x-1.3"[m
+ core = "7.x"[m
+ project = "ctools"[m
+[31m-datestamp = "1344463011"[m
+[32m+[m[32mdatestamp = "1365013512"[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/ctools_custom_content/ctools_custom_content.info b/sites/all/modules/ctools/ctools_custom_content/ctools_custom_content.info[m
+[1mindex 75a2a93..d9c4567 100644[m
+[1m--- a/sites/all/modules/ctools/ctools_custom_content/ctools_custom_content.info[m
+[1m+++ b/sites/all/modules/ctools/ctools_custom_content/ctools_custom_content.info[m
+[36m@@ -4,9 +4,9 @@[m [mcore = 7.x[m
+ package = Chaos tool suite[m
+ dependencies[] = ctools[m
+ [m
+[31m-; Information added by drupal.org packaging script on 2012-08-08[m
+[31m-version = "7.x-1.1"[m
+[32m+[m[32m; Information added by drupal.org packaging script on 2013-04-03[m
+[32m+[m[32mversion = "7.x-1.3"[m
+ core = "7.x"[m
+ project = "ctools"[m
+[31m-datestamp = "1344463011"[m
+[32m+[m[32mdatestamp = "1365013512"[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/ctools_custom_content/ctools_custom_content.install b/sites/all/modules/ctools/ctools_custom_content/ctools_custom_content.install[m
+[1mindex 8348434..b4512f2 100644[m
+[1m--- a/sites/all/modules/ctools/ctools_custom_content/ctools_custom_content.install[m
+[1m+++ b/sites/all/modules/ctools/ctools_custom_content/ctools_custom_content.install[m
+[36m@@ -17,7 +17,7 @@[m [mfunction ctools_custom_content_schema_1() {[m
+       'bulk export' => TRUE,[m
+       'primary key' => 'cid',[m
+       'api' => array([m
+[31m-        'owner' => 'ctools',[m
+[32m+[m[32m        'owner' => 'ctools_custom_content',[m
+         'api' => 'ctools_content',[m
+         'minimum_version' => 1,[m
+         'current_version' => 1,[m
+[1mdiff --git a/sites/all/modules/ctools/drush/ctools.drush.inc b/sites/all/modules/ctools/drush/ctools.drush.inc[m
+[1mindex bf1df1f..1862dbe 100644[m
+[1m--- a/sites/all/modules/ctools/drush/ctools.drush.inc[m
+[1m+++ b/sites/all/modules/ctools/drush/ctools.drush.inc[m
+[36m@@ -381,6 +381,7 @@[m [mfunction ctools_drush_export_info() {[m
+ [m
+   // Get info on these tables, or all tables if none specified.[m
+   $info = _ctools_drush_export_info($table_names, $load);[m
+[32m+[m[32m  $schemas = $info['schemas'];[m
+   $exportables = $info['exportables'];[m
+ [m
+   if (empty($exportables)) {[m
+[36m@@ -416,11 +417,12 @@[m [mfunction ctools_drush_export_info() {[m
+   }[m
+   // Build a tabular output as default.[m
+   else {[m
+[31m-    $header = $tables_only ? array() : array(dt('Base table'), dt('Exportables'));[m
+[32m+[m[32m    $header = $tables_only ? array() : array(dt('Module'), dt('Base table'), dt('Exportables'));[m
+     $rows = array();[m
+     foreach ($exportables as $table => $info) {[m
+       if (is_array($info)) {[m
+         $row = array([m
+[32m+[m[32m          $schemas[$table]['module'],[m
+           $table,[m
+           // Machine name is better for this?[m
+           shellColours::getColouredOutput(implode("\n", array_keys($info)), 'light_green') . "\n",[m
+[36m@@ -434,7 +436,7 @@[m [mfunction ctools_drush_export_info() {[m
+     if (!empty($rows)) {[m
+       drush_print("\n");[m
+       array_unshift($rows, $header);[m
+[31m-      drush_print_table($rows, TRUE, array(20));[m
+[32m+[m[32m      drush_print_table($rows, TRUE, array(20, 20));[m
+       drush_print(dt('Total exportables found: !total', array('!total' => $exportable_counts['total'])));[m
+       foreach ($exportable_counts['exportables'] as $table_name => $count) {[m
+         drush_print(dt('!table_name (!count)', array('!table_name' => $table_name, '!count' => $count)), 2);[m
+[1mdiff --git a/sites/all/modules/ctools/help/plugins-creating.html b/sites/all/modules/ctools/help/plugins-creating.html[m
+[1mindex 186bb74..29a9014 100644[m
+[1m--- a/sites/all/modules/ctools/help/plugins-creating.html[m
+[1m+++ b/sites/all/modules/ctools/help/plugins-creating.html[m
+[36m@@ -1,7 +1,7 @@[m
+ There are two primary pieces to using plugins. The first is getting the data, and the second is using the data.[m
+ [m
+ <h2>Defining a plugin</h2>[m
+[31m-To define that you offer a plugin that modules can implement, you first must implement hook_ctools_plugin_type() to tell the plugin system about your plugin. [m
+[32m+[m[32mTo define that you offer a plugin that modules can implement, you first must implement hook_ctools_plugin_type() to tell the plugin system about your plugin.[m
+ [m
+ <pre>[m
+ /**[m
+[36m@@ -49,7 +49,7 @@[m [mThe following information can be specified for each plugin type:[m
+ <dd><em>Defaults to:</em> <strong>FALSE</strong></dd>[m
+ <dd>If set to TRUE, the plugin type can automatically have 'child plugins' meaning each plugin can actually provide multiple plugins. This is mostly used for plugins that store some of their information in the database, such as views, blocks or exportable custom versions of plugins.</dd>[m
+ <dd>To implement, each plugin can have a 'get child' and 'get children' callback. Both of these should be implemented for performance reasons, since it is best to avoid getting all children if necessary, but if 'get child' is not implemented, it will fall back to 'get children' if it has to.</dd>[m
+[31m-<dd>Child plugins should be named parent:child, with the : being the separator, so that it knows which parent plugin to ask for teh child. The 'get children' method should at least return the parent plugin as part of the list, unless it wants the parent plugin itself to not be a choosable option, which is not unheard of. </dd>[m
+[32m+[m[32m<dd>Child plugins should be named parent:child, with the : being the separator, so that it knows which parent plugin to ask for the child. The 'get children' method should at least return the parent plugin as part of the list, unless it wants the parent plugin itself to not be a choosable option, which is not unheard of. </dd>[m
+ <dd>'get children' arguments are ($plugin, $parent) and 'get child' arguments are ($plugin, $parent, $child).[m
+ </dl>[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/help/plugins-implementing.html b/sites/all/modules/ctools/help/plugins-implementing.html[m
+[1mindex 070f08d..c95e72d 100644[m
+[1m--- a/sites/all/modules/ctools/help/plugins-implementing.html[m
+[1m+++ b/sites/all/modules/ctools/help/plugins-implementing.html[m
+[36m@@ -1,6 +1,7 @@[m
+[31m-<p>To implement plugins, you need to implement a single hook in your module to tell the system where your plugins live, and then you need to implement one or more .inc files that contain the plugin data.</p>[m
+[32m+[m[32m<p>There are two parts to implementing a plugin: telling the system where it is, and implementing one or more .inc files that contain the plugin data.</p>[m
+ [m
+[31m-<h2>Telling it where your plugins live</h2>[m
+[32m+[m[32m<h2>Telling the system where your plugins live</h2>[m
+[32m+[m[32m<h3>How a module implements plugins</h3>[m
+ <p>To implement any plugins at all, you must implement a single function for all plugins: <strong>hook_ctools_plugin_directory</strong>. Every time a module loads plugins, this hook will be called to see which modules implement those plugins and in what directory those plugins will live.</p>[m
+ [m
+ <pre>[m
+[36m@@ -30,13 +31,13 @@[m [mplugins/[m
+         my_content_type.inc[m
+     layouts/[m
+         my_layout.inc[m
+[31m-        my_laout.css[m
+[32m+[m[32m        my_layout.css[m
+         my_layout.tpl.php[m
+         my_layout_image.png[m
+ </pre>[m
+ [m
+[31m-<h2>How a theme can implement plugins</h2>[m
+[31m-<p>Themes can implement plugins if the plugin owner specified that it's possible in its hook_ctools_api_TYPE() call. If so, it is generally exactly the same as modules, except for one important difference: themes don't get hook_ctools_plugin_directory(). Instead, themes add a line to their info file:</p>[m
+[32m+[m[32m<h3>How a theme implements plugins</h3>[m
+[32m+[m[32m<p>Themes can implement plugins if the plugin owner specified that it's possible in its hook_ctools_plugin_type() call. If so, it is generally exactly the same as modules, except for one important difference: themes don't get hook_ctools_plugin_directory(). Instead, themes add a line to their .info file:</p>[m
+ [m
+ <pre>[m
+ plugins[module][type] = directory[m
+[36m@@ -54,7 +55,7 @@[m [m$plugin = array([m
+ );[m
+ </pre>[m
+ [m
+[31m-<p>Several values will be filled in for you automatically, but you can override them if necessary. They include 'name', 'path', 'file' and 'module'. Additionally, the plugin can owner can provide other defaults as well.</p>[m
+[32m+[m[32m<p>Several values will be filled in for you automatically, but you can override them if necessary. They include 'name', 'path', 'file' and 'module'. Additionally, the plugin owner can provide other defaults as well.</p>[m
+ [m
+ <p>There are no required keys by the plugin system itself. The only requirements in the $plugin array will be defined by the plugin type.</p>[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/help/plugins.html b/sites/all/modules/ctools/help/plugins.html[m
+[1mindex b948411..1e64da0 100644[m
+[1m--- a/sites/all/modules/ctools/help/plugins.html[m
+[1m+++ b/sites/all/modules/ctools/help/plugins.html[m
+[36m@@ -1,5 +1,5 @@[m
+ <p>The plugins tool allows a module to allow <b>other</b> modules (and themes!) to provide plugins which provide some kind of functionality or some kind of task. For example, in Panels there are several types of plugins: Content types (which are like blocks), layouts (which are page layouts) and styles (which can be used to style a panel). Each plugin is represented by a .inc file, and the functionality they offer can differ wildly.</p>[m
+ [m
+[31m-<p>A module which uses plugins can implement a hook describing the plugin (which is not necessary, as defaults will be filled in) and then calls a ctools function which loads either all the known plugins (used for listing/choosing) or loads a specific plugin (used when its known which plugin is needed). From the perspective of the plugin system, a plugin is a packet of data, usually some printable info and a list of callbacks. It is up to the module implementing plugins to determine what that info means and what the callbacks do.</p>[m
+[32m+[m[32m<p>A module which uses plugins can implement a hook describing the plugin (which is not necessary, as defaults will be filled in) and then calls a ctools function which loads either all the known plugins (used for listing/choosing) or a specific plugin (used when it's known which plugin is needed). From the perspective of the plugin system, a plugin is a packet of data, usually some printable info and a list of callbacks. It is up to the module implementing plugins to determine what that info means and what the callbacks do.</p>[m
+ [m
+[31m-<p>A module which implements plugins must first implement the <strong>hook_ctools_plugin_directory</strong> function, which simply tells the system which plugins are supported and what directory to look in. Each plugin will then be in a .inc file in the directory supplied. The .inc file will contain a specially named hook which returns the data necessary to implement the plugin.</p>[m
+\ No newline at end of file[m
+[32m+[m[32m<p>A module which implements plugins must first implement the <strong>hook_ctools_plugin_directory</strong> function, which simply tells the system which plugins are supported and what directory to look in. Each plugin will then be in a separate .inc file in the directory supplied. The .inc file will contain a specially named hook which returns the data necessary to implement the plugin.</p>[m
+[1mdiff --git a/sites/all/modules/ctools/includes/action-links.theme.inc b/sites/all/modules/ctools/includes/action-links.theme.inc[m
+[1mnew file mode 100644[m
+[1mindex 0000000..3a2398a[m
+[1m--- /dev/null[m
+[1m+++ b/sites/all/modules/ctools/includes/action-links.theme.inc[m
+[36m@@ -0,0 +1,33 @@[m
+[32m+[m[32m<?php[m
+[32m+[m[32m/**[m
+[32m+[m[32m * @file[m
+[32m+[m[32m * Theme function for wrapping menu local actions.[m
+[32m+[m[32m */[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Delegated implementation of hook_theme()[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction ctools_action_links_theme(&$items) {[m
+[32m+[m[32m  $items['ctools_menu_local_actions_wrapper'] = array([m
+[32m+[m[32m    'render element' => 'links',[m
+[32m+[m[32m    'file' => 'includes/action-links.theme.inc',[m
+[32m+[m[32m  );[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Render a menu local actions wrapper.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param $links[m
+[32m+[m[32m *   Local actions links.[m
+[32m+[m[32m * @param $attributes[m
+[32m+[m[32m *   An array of attributes to append to the wrapper.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction theme_ctools_menu_local_actions_wrapper($variables) {[m
+[32m+[m[32m  $links = drupal_render($variables['links']);[m
+[32m+[m
+[32m+[m[32m  if (empty($links)) {[m
+[32m+[m[32m    return;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  return '<ul class="action-links">' . $links . '</ul>';[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/sites/all/modules/ctools/includes/content.menu.inc b/sites/all/modules/ctools/includes/content.menu.inc[m
+[1mindex 11a686a..93884fc 100644[m
+[1m--- a/sites/all/modules/ctools/includes/content.menu.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/content.menu.inc[m
+[36m@@ -50,6 +50,21 @@[m [mfunction ctools_content_autocomplete_entity($type, $string = '') {[m
+ [m
+     $matches = array();[m
+     if ($type == 'node') {[m
+[32m+[m[32m      if (!user_access('bypass node access')) {[m
+[32m+[m[32m        // If the user is able to view their own unpublished nodes, allow them[m
+[32m+[m[32m        // to see these in addition to published nodes.[m
+[32m+[m[32m        if (user_access('view own unpublished content')) {[m
+[32m+[m[32m          $query->condition(db_or()[m
+[32m+[m[32m            ->condition('b.status', NODE_PUBLISHED)[m
+[32m+[m[32m            ->condition('b.uid', $GLOBALS['user']->uid)[m
+[32m+[m[32m          );[m
+[32m+[m[32m        }[m
+[32m+[m[32m        else {[m
+[32m+[m[32m          // If not, restrict the query to published nodes.[m
+[32m+[m[32m          $query->condition('b.status', NODE_PUBLISHED);[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m
+       $query->addTag('node_access');[m
+       $query->join('users', 'u', 'b.uid = u.uid');[m
+       $query->addField('u', 'name', 'name');[m
+[1mdiff --git a/sites/all/modules/ctools/includes/content.plugin-type.inc b/sites/all/modules/ctools/includes/content.plugin-type.inc[m
+[1mindex 4c767ae..a0debc3 100644[m
+[1m--- a/sites/all/modules/ctools/includes/content.plugin-type.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/content.plugin-type.inc[m
+[36m@@ -10,7 +10,7 @@[m [mfunction ctools_content_plugin_type(&$items) {[m
+     'cache' => FALSE,[m
+     'process' => array([m
+       'function' => 'ctools_content_process',[m
+[31m-      'file' => 'export-ui.inc',[m
+[32m+[m[32m      'file' => 'content.inc',[m
+       'path' => drupal_get_path('module', 'ctools') . '/includes',[m
+     ),[m
+   );[m
+[1mdiff --git a/sites/all/modules/ctools/includes/context-task-handler.inc b/sites/all/modules/ctools/includes/context-task-handler.inc[m
+[1mindex 10fd793..37aa6df 100644[m
+[1m--- a/sites/all/modules/ctools/includes/context-task-handler.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/context-task-handler.inc[m
+[36m@@ -100,6 +100,24 @@[m [mfunction ctools_context_handler_render_handler($task, $subtask, $handler, $conte[m
+     return NULL;[m
+   }[m
+ [m
+[32m+[m[32m  if ($page) {[m
+[32m+[m[32m    if ($subtask) {[m
+[32m+[m[32m      $task_name = page_manager_make_task_name($task['name'], $subtask['name']);[m
+[32m+[m[32m    }[m
+[32m+[m[32m    else {[m
+[32m+[m[32m      $task_name = $task['name'];[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    page_manager_get_current_page(array([m
+[32m+[m[32m      'name' => $task_name,[m
+[32m+[m[32m      'task' => $task,[m
+[32m+[m[32m      'subtask' => $subtask,[m
+[32m+[m[32m      'contexts' => $contexts,[m
+[32m+[m[32m      'arguments' => $args,[m
+[32m+[m[32m      'handler' => $handler,[m
+[32m+[m[32m    ));[m
+[32m+[m[32m  }[m
+[32m+[m
+   $info = $function($handler, $contexts, $args);[m
+   if (!$info) {[m
+     return NULL;[m
+[36m@@ -119,28 +137,16 @@[m [mfunction ctools_context_handler_render_handler($task, $subtask, $handler, $conte[m
+     return $info;[m
+   }[m
+ [m
+[31m-  if ($subtask) {[m
+[31m-    $task_name = page_manager_make_task_name($task['name'], $subtask['name']);[m
+[31m-  }[m
+[31m-  else {[m
+[31m-    $task_name = $task['name'];[m
+[31m-  }[m
+[31m-[m
+[31m-  page_manager_get_current_page(array([m
+[31m-    'name' => $task_name,[m
+[31m-    'task' => $task,[m
+[31m-    'subtask' => $subtask,[m
+[31m-    'contexts' => $contexts,[m
+[31m-    'arguments' => $args,[m
+[31m-    'handler' => $handler,[m
+[31m-  ));[m
+[31m-[m
+   if (!empty($info['response code']) && $info['response code'] != 200) {[m
+     switch ($info['response code']) {[m
+       case 403:[m
+         return MENU_ACCESS_DENIED;[m
+       case 404:[m
+         return MENU_NOT_FOUND;[m
+[32m+[m[32m      case 410:[m
+[32m+[m[32m        drupal_add_http_header('Status', '410 Gone');[m
+[32m+[m[32m        drupal_exit();[m
+[32m+[m[32m        break;[m
+       case 301:[m
+       case 302:[m
+       case 303:[m
+[36m@@ -449,7 +455,7 @@[m [mfunction ctools_context_handler_edit_criteria($form, &$form_state) {[m
+   ctools_include('ajax');[m
+   ctools_modal_add_plugin_js(ctools_get_access_plugins());[m
+   ctools_include('context-access-admin');[m
+[31m-  $form_state['module'] = 'page_manager_task_handler';[m
+[32m+[m[32m  $form_state['module'] = (isset($form_state['module'])) ? $form_state['module'] : 'page_manager_task_handler';[m
+   // Encode a bunch of info into the argument so we can get our cache later[m
+   $form_state['callback argument'] = $form_state['task_name'] . '*' . $form_state['handler']->name;[m
+   $form_state['access'] = $form_state['handler']->conf['access'];[m
+[1mdiff --git a/sites/all/modules/ctools/includes/context.inc b/sites/all/modules/ctools/includes/context.inc[m
+[1mindex 720a6fc..93be748 100644[m
+[1m--- a/sites/all/modules/ctools/includes/context.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/context.inc[m
+[36m@@ -508,6 +508,17 @@[m [mfunction ctools_context_get_all_converters() {[m
+ [m
+ /**[m
+  * Let the context convert an argument based upon the converter that was given.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param $context[m
+[32m+[m[32m *   The context object[m
+[32m+[m[32m * @param $converter[m
+[32m+[m[32m *   The converter to use, which should be a string provided by the converter list.[m
+[32m+[m[32m * @param $converter_options[m
+[32m+[m[32m *   A n array of options to pass on to the generation function. For contexts[m
+[32m+[m[32m *   that use token module, of particular use is 'sanitize' => FALSE which can[m
+[32m+[m[32m *   get raw tokens. This should ONLY be used in values that will later be[m
+[32m+[m[32m *   treated as unsafe user input since these values are by themselves unsafe.[m
+[32m+[m[32m *   It is particularly useful to get raw values from Field API.[m
+  */[m
+ function ctools_context_convert_context($context, $converter, $converter_options = array()) {[m
+   // Contexts without plugins might be optional placeholders.[m
+[36m@@ -633,7 +644,7 @@[m [mfunction ctools_context_keyword_substitute($string, $keywords, $contexts, $conve[m
+ [m
+   // Look for context matches we we only have to convert known matches.[m
+   $matches = array();[m
+[31m-  if (preg_match_all('/%([a-zA-Z0-9%:_-]+)/us', $string, $matches)) {[m
+[32m+[m[32m  if (preg_match_all('/%(%|[a-zA-Z0-9_-]+(?:\:[a-zA-Z0-9_-]+)*)/us', $string, $matches)) {[m
+     foreach ($matches[1] as $keyword) {[m
+       // Ignore anything it finds with %%.[m
+       if ($keyword[0] == '%') {[m
+[1mdiff --git a/sites/all/modules/ctools/includes/css.inc b/sites/all/modules/ctools/includes/css.inc[m
+[1mindex 8bc4c66..ee11d48 100644[m
+[1m--- a/sites/all/modules/ctools/includes/css.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/css.inc[m
+[36m@@ -284,8 +284,9 @@[m [mfunction ctools_css_disassemble($css) {[m
+   $disassembled_css = array();[m
+   // Remove comments.[m
+   $css = preg_replace("/\/\*(.*)?\*\//Usi", "", $css);[m
+[31m-  // Split out each statement[m
+[31m-  $statements = preg_split('/[;}]/', $css);[m
+[32m+[m[32m  // Split out each statement. Match either a right curly brace or a semi-colon[m
+[32m+[m[32m  // that precedes a left curly brace with no right curly brace separating them.[m
+[32m+[m[32m  $statements = preg_split('/}|;(?=[^}]*{)/', $css);[m
+ [m
+   // If we have any statements, parse them.[m
+   if (!empty($statements)) {[m
+[1mdiff --git a/sites/all/modules/ctools/includes/dropbutton.theme.inc b/sites/all/modules/ctools/includes/dropbutton.theme.inc[m
+[1mindex 0848666..fcdd5a3 100644[m
+[1m--- a/sites/all/modules/ctools/includes/dropbutton.theme.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/dropbutton.theme.inc[m
+[36m@@ -1,10 +1,11 @@[m
+ <?php[m
+[31m-// $Id$[m
+ [m
+ /**[m
+  * @file[m
+  * Provide a javascript based dropbutton menu.[m
+  *[m
+[32m+[m[32m * An example are the edit/disable/delete links on the views listing page.[m
+[32m+[m[32m *[m
+  * The dropbutton menu will show up as a button with a clickable twisty pointer[m
+  * to the right. When clicked the button will expand, showing the list of links.[m
+  *[m
+[1mdiff --git a/sites/all/modules/ctools/includes/dropdown.theme.inc b/sites/all/modules/ctools/includes/dropdown.theme.inc[m
+[1mindex 2e21559..7e748f5 100644[m
+[1m--- a/sites/all/modules/ctools/includes/dropdown.theme.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/dropdown.theme.inc[m
+[36m@@ -4,6 +4,9 @@[m
+  * @file[m
+  * Provide a javascript based dropdown menu.[m
+  *[m
+[32m+[m[32m * An example are the dropdown settings in the panels ui, like for adding[m
+[32m+[m[32m * new panes.[m
+[32m+[m[32m *[m
+  * The dropdown menu will show up as a clickable link; when clicked,[m
+  * a small menu will slide down beneath it, showing the list of links.[m
+  *[m
+[1mdiff --git a/sites/all/modules/ctools/includes/export.inc b/sites/all/modules/ctools/includes/export.inc[m
+[1mindex dfbe74b..0b2ef46 100644[m
+[1m--- a/sites/all/modules/ctools/includes/export.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/export.inc[m
+[36m@@ -386,10 +386,15 @@[m [mfunction ctools_export_crud_disable($table, $object) {[m
+  */[m
+ function ctools_export_load_object($table, $type = 'all', $args = array()) {[m
+   $cache = &drupal_static(__FUNCTION__);[m
+[32m+[m[32m  $cache_table_exists = &drupal_static(__FUNCTION__ . '_table_exists', array());[m
+   $cached_database = &drupal_static('ctools_export_load_object_all');[m
+ [m
+[32m+[m[32m  if (!array_key_exists($table, $cache_table_exists)) {[m
+[32m+[m[32m    $cache_table_exists[$table] = db_table_exists($table);[m
+[32m+[m[32m  }[m
+[32m+[m
+   $schema = ctools_export_get_schema($table);[m
+[31m-  if (empty($schema) || !db_table_exists($table)) {[m
+[32m+[m[32m  if (empty($schema) || !$cache_table_exists[$table]) {[m
+     return array();[m
+   }[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/includes/fields.inc b/sites/all/modules/ctools/includes/fields.inc[m
+[1mindex dcd6139..162262c 100644[m
+[1m--- a/sites/all/modules/ctools/includes/fields.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/fields.inc[m
+[36m@@ -170,6 +170,8 @@[m [mfunction ctools_field_label($field_name) {[m
+  *[m
+  * @param $field_name[m
+  *   Either a field instance object or the name of the field.[m
+[32m+[m[32m *   If the 'field' key is populated it will be used as the field[m
+[32m+[m[32m *   settings.[m
+  * @param $op[m
+  *   Possible operations include:[m
+  *   - form[m
+[36m@@ -222,6 +224,7 @@[m [mfunction ctools_field_label($field_name) {[m
+ function ctools_field_invoke_field($field_name, $op, $entity_type, $entity, &$a = NULL, &$b = NULL, $options = array()) {[m
+   if (is_array($field_name)) {[m
+     $instance = $field_name;[m
+[32m+[m[32m    $field = empty($field_name['field']) ? field_info_field($instance['field_name']) : $field_name['field'];[m
+     $field_name = $instance['field_name'];[m
+   }[m
+   else {[m
+[36m@@ -245,7 +248,6 @@[m [mfunction ctools_field_invoke_field($field_name, $op, $entity_type, $entity, &$a[m
+ [m
+   // Everything from here is unmodified code from _field_invoke() formerly[m
+   // inside a foreach loop over the instances.[m
+[31m-  $field = field_info_field($field_name);[m
+   $function = $options['default'] ? 'field_default_' . $op : $field['module'] . '_field_' . $op;[m
+   if (function_exists($function)) {[m
+     // Determine the list of languages to iterate on.[m
+[1mdiff --git a/sites/all/modules/ctools/includes/plugins.inc b/sites/all/modules/ctools/includes/plugins.inc[m
+[1mindex 2dbdd48..0363fcb 100644[m
+[1m--- a/sites/all/modules/ctools/includes/plugins.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/plugins.inc[m
+[36m@@ -440,7 +440,7 @@[m [mfunction ctools_plugin_load_includes($info, $filename = NULL) {[m
+       $all_files[$info['module']][$info['type']] = array();[m
+       // Load all our plugins.[m
+       $directories = ctools_plugin_get_directories($info);[m
+[31m-      $extension = empty($info['info file']) ? $info['extension'] : 'info';[m
+[32m+[m[32m      $extension = (empty($info['info file']) || ($info['extension'] != 'inc')) ? $info['extension'] : 'info';[m
+ [m
+       foreach ($directories as $module => $path) {[m
+         $all_files[$info['module']][$info['type']][$module] = file_scan_directory($path, '/\.' . $extension . '$/', array('key' => 'name'));[m
+[1mdiff --git a/sites/all/modules/ctools/includes/wizard.inc b/sites/all/modules/ctools/includes/wizard.inc[m
+[1mindex 946ed0f..6f5d794 100644[m
+[1m--- a/sites/all/modules/ctools/includes/wizard.inc[m
+[1m+++ b/sites/all/modules/ctools/includes/wizard.inc[m
+[36m@@ -430,6 +430,12 @@[m [mfunction ctools_wizard_submit(&$form, &$form_state) {[m
+       }[m
+       else if ($type == 'next') {[m
+         $form_state['redirect'] = ctools_wizard_get_path($form_state['form_info'], $form_state['clicked_button']['#next']);[m
+[32m+[m[32m        if (!empty($_GET['destination'])) {[m
+[32m+[m[32m          // We don't want drupal_goto redirect this request[m
+[32m+[m[32m          // back. ctools_wizard_get_path ensures that the destination is[m
+[32m+[m[32m          // carried over on subsequent pages.[m
+[32m+[m[32m          unset($_GET['destination']);[m
+[32m+[m[32m        }[m
+       }[m
+       else if (isset($form_state['form_info']['return path'])) {[m
+         $form_state['redirect'] = $form_state['form_info']['return path'];[m
+[36m@@ -449,11 +455,27 @@[m [mfunction ctools_wizard_get_path($form_info, $step) {[m
+     foreach ($form_info['path'] as $id => $part) {[m
+       $form_info['path'][$id] = str_replace('%step', $step, $form_info['path'][$id]);[m
+     }[m
+[31m-    return $form_info['path'];[m
+[32m+[m[32m    $path = $form_info['path'];[m
+   }[m
+   else {[m
+[31m-    return array(str_replace('%step', $step, $form_info['path']));[m
+[32m+[m[32m    $path = array(str_replace('%step', $step, $form_info['path']));[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  // If destination is set, carry it over so it'll take effect when[m
+[32m+[m[32m  // saving. The submit handler will unset destination to avoid drupal_goto[m
+[32m+[m[32m  // redirecting us.[m
+[32m+[m[32m  if (!empty($_GET['destination'])) {[m
+[32m+[m[32m    // Ensure that options is an array.[m
+[32m+[m[32m    if (!isset($path[1]) || !is_array($path[1])) {[m
+[32m+[m[32m      $path[1] = array();[m
+[32m+[m[32m    }[m
+[32m+[m[32m    // Ensure that the query part of options is an array.[m
+[32m+[m[32m    $path[1] += array('query' => array());[m
+[32m+[m[32m    // Add the destination parameter, if not set already.[m
+[32m+[m[32m    $path[1]['query'] += drupal_get_destination();[m
+   }[m
+[32m+[m
+[32m+[m[32m  return $path;[m
+ }[m
+ [m
+ /**[m
+[1mdiff --git a/sites/all/modules/ctools/js/auto-submit.js b/sites/all/modules/ctools/js/auto-submit.js[m
+[1mindex 59178c4..a3e9aa4 100644[m
+[1m--- a/sites/all/modules/ctools/js/auto-submit.js[m
+[1m+++ b/sites/all/modules/ctools/js/auto-submit.js[m
+[36m@@ -16,6 +16,12 @@[m
+  *   '#attributes' => array('class' => array('ctools-auto-submit-full-form')),[m
+  * @endcode[m
+  *[m
+[32m+[m[32m * If you want to exclude a field from the ctool-auto-submit-full-form auto submission,[m
+[32m+[m[32m * add the class ctools-auto-submit-exclude to the form element. With FAPI, add:[m
+[32m+[m[32m * @code[m
+[32m+[m[32m *   '#attributes' => array('class' => array('ctools-auto-submit-exclude')),[m
+[32m+[m[32m * @endcode[m
+[32m+[m[32m *[m
+  * Finally, you have to identify which button you want clicked for autosubmit.[m
+  * The behavior of this button will be honored if it's ajaxy or not:[m
+  * @code[m
+[36m@@ -43,7 +49,7 @@[m [mDrupal.behaviors.CToolsAutoSubmit = {[m
+       .once('ctools-auto-submit')[m
+       .change(function (e) {[m
+         // don't trigger on text change for full-form[m
+[31m-        if ($(e.target).is(':not(:text, :submit)')) {[m
+[32m+[m[32m        if ($(e.target).is(':not(:text, :submit, .ctools-auto-submit-exclude)')) {[m
+           triggerSubmit.call(e.target.form);[m
+         }[m
+       });[m
+[36m@@ -68,6 +74,7 @@[m [mDrupal.behaviors.CToolsAutoSubmit = {[m
+     ];[m
+     // Don't wait for change event on textfields[m
+     $('.ctools-auto-submit-full-form input:text, input:text.ctools-auto-submit', context)[m
+[32m+[m[32m      .filter(':not(.ctools-auto-submit-exclude)')[m
+       .once('ctools-auto-submit', function () {[m
+         // each textinput element has his own timeout[m
+         var timeoutID = 0;[m
+[36m@@ -81,6 +88,11 @@[m [mDrupal.behaviors.CToolsAutoSubmit = {[m
+             if ($.inArray(e.keyCode, discardKeyCode) === -1) {[m
+               timeoutID = setTimeout($.proxy(triggerSubmit, this.form), 500);[m
+             }[m
+[32m+[m[32m          })[m
+[32m+[m[32m          .bind('change', function (e) {[m
+[32m+[m[32m            if ($.inArray(e.keyCode, discardKeyCode) === -1) {[m
+[32m+[m[32m              timeoutID = setTimeout($.proxy(triggerSubmit, this.form), 500);[m
+[32m+[m[32m            }[m
+           });[m
+       });[m
+   }[m
+[1mdiff --git a/sites/all/modules/ctools/js/dependent.js b/sites/all/modules/ctools/js/dependent.js[m
+[1mindex 07ff021..e9e2447 100644[m
+[1m--- a/sites/all/modules/ctools/js/dependent.js[m
+[1m+++ b/sites/all/modules/ctools/js/dependent.js[m
+[36m@@ -97,7 +97,7 @@[m
+           else {[m
+             switch ($(trigger).attr('type')) {[m
+               case 'checkbox':[m
+[31m-                var val = $(trigger).attr('checked') || 0;[m
+[32m+[m[32m                var val = $(trigger).attr('checked') ? true : false;[m
+ [m
+                 if (val) {[m
+                   $(trigger).siblings('label').removeClass('hidden-options').addClass('expanded-options');[m
+[1mdiff --git a/sites/all/modules/ctools/js/dropbutton.js b/sites/all/modules/ctools/js/dropbutton.js[m
+[1mindex 49bc107..f505550 100644[m
+[1m--- a/sites/all/modules/ctools/js/dropbutton.js[m
+[1m+++ b/sites/all/modules/ctools/js/dropbutton.js[m
+[36m@@ -1,4 +1,3 @@[m
+[31m-// $Id$[m
+ /**[m
+  * @file[m
+  * Implement a simple, clickable dropbutton menu.[m
+[1mdiff --git a/sites/all/modules/ctools/js/modal.js b/sites/all/modules/ctools/js/modal.js[m
+[1mindex 1376d82..831649f 100644[m
+[1m--- a/sites/all/modules/ctools/js/modal.js[m
+[1m+++ b/sites/all/modules/ctools/js/modal.js[m
+[36m@@ -278,7 +278,10 @@[m
+       Drupal.CTools.Modal.show(Drupal.CTools.Modal.getSettings(ajax.element));[m
+     }[m
+     $('#modal-title').html(response.title);[m
+[31m-    $('#modal-content').html(response.output);[m
+[32m+[m[32m    // Simulate an actual page load by scrolling to the top after adding the[m
+[32m+[m[32m    // content. This is helpful for allowing users to see error messages at the[m
+[32m+[m[32m    // top of a form, etc.[m
+[32m+[m[32m    $('#modal-content').html(response.output).scrollTop(0);[m
+     Drupal.attachBehaviors();[m
+   }[m
+ [m
+[36m@@ -396,7 +399,7 @@[m
+       }[m
+ [m
+       var parents = $(target).parents().get();[m
+[31m-      for (var i in $(target).parents().get()) {[m
+[32m+[m[32m      for (var i = 0; i < parents.length; ++i) {[m
+         var position = $(parents[i]).css('position');[m
+         if (position == 'absolute' || position == 'fixed') {[m
+           return true;[m
+[36m@@ -431,7 +434,7 @@[m
+       }[m
+     };[m
+ [m
+[31m-    $(document).bind('keypress', modalEventEscapeCloseHandler);[m
+[32m+[m[32m    $(document).bind('keydown', modalEventEscapeCloseHandler);[m
+ [m
+     // Close the open modal content and backdrop[m
+     function close() {[m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/page_manager.admin.inc b/sites/all/modules/ctools/page_manager/page_manager.admin.inc[m
+[1mindex c01961b..3dce041 100644[m
+[1m--- a/sites/all/modules/ctools/page_manager/page_manager.admin.inc[m
+[1m+++ b/sites/all/modules/ctools/page_manager/page_manager.admin.inc[m
+[36m@@ -158,7 +158,7 @@[m [mfunction page_manager_get_pages($tasks, &$pages, $task_id = NULL) {[m
+     $visible_path = '';[m
+     if (!empty($task['admin path'])) {[m
+       foreach (explode('/', $task['admin path']) as $bit) {[m
+[31m-        if ($bit[0] != '!') {[m
+[32m+[m[32m        if (isset($bit[0]) && $bit[0] != '!') {[m
+           $path[] = $bit;[m
+         }[m
+       }[m
+[36m@@ -1126,9 +1126,11 @@[m [mfunction page_manager_render_operations(&$page, $operations, $active_trail, $att[m
+     // We only render an li for things in the same nav tree.[m
+     if (empty($operation['location']) || $operation['location'] == $location) {[m
+       if (!is_array($attributes['class'])) {[m
+[31m-        dsm($attributes['class']);[m
+[32m+[m[32m        $attributes['class'] = array($attributes['class']);[m
+       }[m
+[32m+[m
+       $class = empty($attributes['class']) || !is_array($attributes['class']) ? array() : $attributes['class'];[m
+[32m+[m
+       if ($id == $first) {[m
+         $class[] = 'operation-first';[m
+       }[m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/page_manager.api.php b/sites/all/modules/ctools/page_manager/page_manager.api.php[m
+[1mnew file mode 100644[m
+[1mindex 0000000..03e2e75[m
+[1m--- /dev/null[m
+[1m+++ b/sites/all/modules/ctools/page_manager/page_manager.api.php[m
+[36m@@ -0,0 +1,39 @@[m
+[32m+[m[32m<?php[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * @file[m
+[32m+[m[32m * Describe hooks provided by the Page Manager module.[m
+[32m+[m[32m */[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * @addtogroup hooks[m
+[32m+[m[32m * @{[m
+[32m+[m[32m */[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * @todo.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param array $result[m
+[32m+[m[32m *   @todo.[m
+[32m+[m[32m * @param object $page[m
+[32m+[m[32m *   @todo.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction hook_page_manager_operations_alter(&$result, &$page) {[m
+[32m+[m[32m  // @todo.[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * @todo.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param array $operations[m
+[32m+[m[32m *   @todo.[m
+[32m+[m[32m * @param object $handler[m
+[32m+[m[32m *   @todo.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction hook_page_manager_variant_operations_alter(&$operations, &$handler) {[m
+[32m+[m[32m  // @todo.[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * @} End of "addtogroup hooks".[m
+[32m+[m[32m */[m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/page_manager.info b/sites/all/modules/ctools/page_manager/page_manager.info[m
+[1mindex 780c115..76095ff 100644[m
+[1m--- a/sites/all/modules/ctools/page_manager/page_manager.info[m
+[1m+++ b/sites/all/modules/ctools/page_manager/page_manager.info[m
+[36m@@ -4,9 +4,9 @@[m [mcore = 7.x[m
+ dependencies[] = ctools[m
+ package = Chaos tool suite[m
+ [m
+[31m-; Information added by drupal.org packaging script on 2012-08-08[m
+[31m-version = "7.x-1.1"[m
+[32m+[m[32m; Information added by drupal.org packaging script on 2013-04-03[m
+[32m+[m[32mversion = "7.x-1.3"[m
+ core = "7.x"[m
+ project = "ctools"[m
+[31m-datestamp = "1344463011"[m
+[32m+[m[32mdatestamp = "1365013512"[m
+ [m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/page_manager.install b/sites/all/modules/ctools/page_manager/page_manager.install[m
+[1mindex ad2781c..b170ce7 100644[m
+[1m--- a/sites/all/modules/ctools/page_manager/page_manager.install[m
+[1m+++ b/sites/all/modules/ctools/page_manager/page_manager.install[m
+[36m@@ -23,6 +23,8 @@[m [mfunction page_manager_schema_1() {[m
+       'identifier' => 'handler',[m
+       'bulk export' => TRUE,[m
+       'export callback' => 'page_manager_export_task_handler',[m
+[32m+[m[32m      'load callback' => 'page_manager_export_task_handler_load',[m
+[32m+[m[32m      'delete callback' => 'page_manager_delete_task_handler',[m
+       'primary key' => 'did',[m
+       'api' => array([m
+         'owner' => 'page_manager',[m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/page_manager.module b/sites/all/modules/ctools/page_manager/page_manager.module[m
+[1mindex 6d6c199..da99a57 100644[m
+[1m--- a/sites/all/modules/ctools/page_manager/page_manager.module[m
+[1m+++ b/sites/all/modules/ctools/page_manager/page_manager.module[m
+[36m@@ -696,6 +696,44 @@[m [mfunction page_manager_export_task_handler($handler, $indent = '') {[m
+ }[m
+ [m
+ /**[m
+[32m+[m[32m * Loads page manager handler for export.[m
+[32m+[m[32m *[m
+[32m+[m[32m * Callback to load page manager handler within ctools_export_crud_load().[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param string $name[m
+[32m+[m[32m *   The name of the handler to load.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @return[m
+[32m+[m[32m *   Loaded page manager handler object, extended with external properties.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction page_manager_export_task_handler_load($name) {[m
+[32m+[m[32m  $table = 'page_manager_handlers';[m
+[32m+[m[32m  $schema = ctools_export_get_schema($table);[m
+[32m+[m[32m  $export = $schema['export'];[m
+[32m+[m
+[32m+[m[32m  $result = ctools_export_load_object($table, 'names', array($name));[m
+[32m+[m[32m  if (isset($result[$name])) {[m
+[32m+[m[32m    $handler = $result[$name];[m
+[32m+[m
+[32m+[m[32m    // Weight is stored in additional table so that in-code task handlers[m
+[32m+[m[32m    // don't need to get written to the database just because they have their[m
+[32m+[m[32m    // weight changed. Therefore, handler could have no correspondent database[m
+[32m+[m[32m    // entry. Revert will not be performed for this handler and the weight[m
+[32m+[m[32m    // will not be reverted. To make possible revert of the weight field[m
+[32m+[m[32m    // export_type must simulate that the handler is stored in the database.[m
+[32m+[m[32m    $handler->export_type = EXPORT_IN_DATABASE;[m
+[32m+[m
+[32m+[m[32m    // Also, page manager handler weight should be overriden with correspondent[m
+[32m+[m[32m    // weight from page_manager_weights table, if there is one.[m
+[32m+[m[32m    $result = db_query('SELECT weight FROM {page_manager_weights} WHERE name = (:names)', array(':names' => $handler->name))->fetchField();[m
+[32m+[m[32m    if (is_numeric($result)) {[m
+[32m+[m[32m      $handler->weight = $result;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return $handler;[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+  * Create a new task handler object.[m
+  *[m
+  * @param $plugin[m
+[36m@@ -800,9 +838,6 @@[m [mfunction page_manager_get_task_subtasks($task) {[m
+     if (is_array($retval)) {[m
+       return $retval;[m
+     }[m
+[31m-    else {[m
+[31m-      dsm($retval);[m
+[31m-    }[m
+   }[m
+ [m
+   return array();[m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/plugins/task_handlers/http_response.inc b/sites/all/modules/ctools/page_manager/plugins/task_handlers/http_response.inc[m
+[1mindex c11dcd7..e5c0141 100644[m
+[1m--- a/sites/all/modules/ctools/page_manager/plugins/task_handlers/http_response.inc[m
+[1m+++ b/sites/all/modules/ctools/page_manager/plugins/task_handlers/http_response.inc[m
+[36m@@ -105,8 +105,9 @@[m [m$plugin = array([m
+  */[m
+ function page_manager_http_response_codes() {[m
+   return array([m
+[31m-    404 => t('404 Page not found'),[m
+     403 => t('403 Access denied'),[m
+[32m+[m[32m    404 => t('404 Page not found'),[m
+[32m+[m[32m    410 => t('410 Gone'),[m
+     301 => t('301 Redirect'),[m
+   );[m
+ }[m
+[36m@@ -282,4 +283,4 @@[m [mfunction page_manager_http_response_render($handler, $base_contexts, $args, $tes[m
+   }[m
+ [m
+   return $info;[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/plugins/tasks/comment_reply.inc b/sites/all/modules/ctools/page_manager/plugins/tasks/comment_reply.inc[m
+[1mnew file mode 100644[m
+[1mindex 0000000..0fcf9e2[m
+[1m--- /dev/null[m
+[1m+++ b/sites/all/modules/ctools/page_manager/plugins/tasks/comment_reply.inc[m
+[36m@@ -0,0 +1,162 @@[m
+[32m+[m[32m<?php[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Specialized implementation of hook_page_manager_task_tasks(). See api-task.html for[m
+[32m+[m[32m * more information.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction page_manager_comment_reply_page_manager_tasks() {[m
+[32m+[m[32m  if (!module_exists('comment')) {[m
+[32m+[m[32m    return;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  return array([m
+[32m+[m[32m    // This is a 'page' task and will fall under the page admin UI[m
+[32m+[m[32m    'task type' => 'page',[m
+[32m+[m
+[32m+[m[32m    'title' => t('Comment Reply page'),[m
+[32m+[m[32m    'admin title' => t('Comment Reply page'),[m
+[32m+[m[32m    'admin description' => t('When enabled, this overrides the default Drupal behavior for the site contact page at <em>/contact</em>. If no variant is selected, the default Drupal contact form will be used.'),[m
+[32m+[m[32m    'admin path' => 'comment/reply/%node',[m
+[32m+[m
+[32m+[m[32m    // Menu hooks so that we can alter the node/%node menu entry to point to us.[m
+[32m+[m[32m    'hook menu alter' => 'page_manager_comment_reply_menu_alter',[m
+[32m+[m
+[32m+[m[32m    // This is task uses 'context' handlers and must implement these to give the[m
+[32m+[m[32m    // handler data it needs.[m
+[32m+[m[32m    'handler type' => 'context',[m
+[32m+[m[32m    'get arguments' => 'page_manager_comment_reply_get_arguments',[m
+[32m+[m[32m    'get context placeholders' => 'page_manager_comment_reply_get_contexts',[m
+[32m+[m
+[32m+[m[32m  // Allow this to be enabled or disabled:[m
+[32m+[m[32m    'disabled' => variable_get('page_manager_comment_reply_disabled', TRUE),[m
+[32m+[m[32m    'enable callback' => 'page_manager_comment_reply_enable',[m
+[32m+[m[32m    'access callback' => 'page_manager_comment_reply_check',[m
+[32m+[m[32m  );[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Callback to enable/disable the page from the UI.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction page_manager_comment_reply_enable($cache, $status) {[m
+[32m+[m[32m  variable_set('page_manager_comment_reply_disabled', $status);[m
+[32m+[m[32m  // Set a global flag so that the menu routine knows it needs[m
+[32m+[m[32m  // to set a message if enabling cannot be done.[m
+[32m+[m[32m  if (!$status) {[m
+[32m+[m[32m    $GLOBALS['page_manager_enabling_comment_reply'] = TRUE;[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Entry point for our overridden comment.[m
+[32m+[m[32m *[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction page_manager_comment_reply_page($node, $pid = NULL){[m
+[32m+[m[32m    // Load my task plugin[m
+[32m+[m[32m  $task = page_manager_get_task('comment_reply');[m
+[32m+[m
+[32m+[m[32m  // Load the node into a context.[m
+[32m+[m[32m  ctools_include('context');[m
+[32m+[m[32m  ctools_include('context-task-handler');[m
+[32m+[m
+[32m+[m[32m  $contexts = ctools_context_handler_get_task_contexts($task, '', array($node, $pid));[m
+[32m+[m
+[32m+[m[32m  if (array_key_exists('argument_cid_3', $contexts) && $contexts['argument_cid_3']->data->nid != $node->nid) {[m
+[32m+[m[32m    // Attempting to reply to a comment not belonging to the current nid.[m
+[32m+[m[32m    drupal_set_message(t('The comment you are replying to does not exist.'), 'error');[m
+[32m+[m[32m    drupal_goto("node/$node->nid");[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  $output = ctools_context_handler_render($task, '', $contexts, array($node, $pid));[m
+[32m+[m[32m  if ($output != FALSE) {[m
+[32m+[m[32m    return $output;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  $function = 'comment_reply';[m
+[32m+[m[32m  foreach (module_implements('page_manager_override') as $module) {[m
+[32m+[m[32m    $call = $module . '_page_manager_override';[m
+[32m+[m[32m    if (($rc = $call('comment_reply')) && function_exists($rc)) {[m
+[32m+[m[32m      $function = $rc;[m
+[32m+[m[32m      break;[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  module_load_include('inc', 'comment', 'comment.pages');[m
+[32m+[m[32m  return $function($node, $pid);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Callback to get arguments provided by this task handler.[m
+[32m+[m[32m *[m
+[32m+[m[32m * Since this is the node view and there is no UI on the arguments, we[m
+[32m+[m[32m * create dummy arguments that contain the needed data.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction page_manager_comment_reply_get_arguments($task, $subtask_id) {[m
+[32m+[m[32m  return array([m
+[32m+[m[32m    array([m
+[32m+[m[32m      'keyword' => 'node',[m
+[32m+[m[32m      'identifier' => t('Node being commented on'),[m
+[32m+[m[32m      'id' => 2,[m
+[32m+[m[32m      'name' => 'entity_id:node',[m
+[32m+[m[32m      'settings' => array(),[m
+[32m+[m[32m    ),[m
+[32m+[m[32m    array([m
+[32m+[m[32m      'keyword' => 'comment',[m
+[32m+[m[32m      'identifier' => t('Comment being replied to'),[m
+[32m+[m[32m      'id' => 3,[m
+[32m+[m[32m      'name' => 'entity_id:comment',[m
+[32m+[m[32m      'settings' => array(),[m
+[32m+[m[32m    ),[m
+[32m+[m[32m  );[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Callback to get context placeholders provided by this handler.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction page_manager_comment_reply_get_contexts($task, $subtask_id) {[m
+[32m+[m[32m  return ctools_context_get_placeholders_from_argument(page_manager_comment_reply_get_arguments($task, $subtask_id));[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Callback defined by page_manager_node_view_page_manager_tasks().[m
+[32m+[m[32m *[m
+[32m+[m[32m * Alter the node view input so that node view comes to us rather than the[m
+[32m+[m[32m * normal node view process.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction page_manager_comment_reply_menu_alter(&$items, $task) {[m
+[32m+[m[32m  if (variable_get('page_manager_comment_reply_disabled', TRUE)) {[m
+[32m+[m[32m    return;[m
+[32m+[m[32m  }[m
+[32m+[m[32m  // Override the node view handler for our purpose.[m
+[32m+[m[32m  $callback = $items['comment/reply/%node']['page callback'];[m
+[32m+[m[32m  if ($callback == 'comment_reply' || variable_get('page_manager_override_anyway', FALSE)) {[m
+[32m+[m[32m    $items['comment/reply/%node']['page callback'] = 'page_manager_comment_reply_page';[m
+[32m+[m[32m    $items['comment/reply/%node']['file path'] = $task['path'];[m
+[32m+[m[32m    $items['comment/reply/%node']['file'] = $task['file'];[m
+[32m+[m[32m  }[m
+[32m+[m[32m  else {[m
+[32m+[m[32m    // automatically disable this task if it cannot be enabled.[m
+[32m+[m[32m    variable_set('page_manager_comment_reply_disabled', TRUE);[m
+[32m+[m[32m    if (!empty($GLOBALS['page_manager_enabling_comment_reply'])) {[m
+[32m+[m[32m      drupal_set_message(t('Page manager module is unable to enable comment/reply/%node because some other module already has overridden with %callback.', array('%callback' => $callback)), 'error');[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  // @todo override node revision handler as well?[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Callback to determine if a page is accessible.[m
+[32m+[m[32m *[m
+[32m+[m[32m * @param $task[m
+[32m+[m[32m *   The task plugin.[m
+[32m+[m[32m * @param $subtask_id[m
+[32m+[m[32m *   The subtask id[m
+[32m+[m[32m * @param $contexts[m
+[32m+[m[32m *   The contexts loaded for the task.[m
+[32m+[m[32m * @return[m
+[32m+[m[32m *   TRUE if the current user can access the page.[m
+[32m+[m[32m */[m
+[32m+[m[32mfunction page_manager_comment_reply_access_check($task, $subtask_id, $contexts) {[m
+[32m+[m[32m  $context = reset($contexts);[m
+[32m+[m[32m  return TRUE;[m
+[32m+[m[32m}[m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/plugins/tasks/term_view.inc b/sites/all/modules/ctools/page_manager/plugins/tasks/term_view.inc[m
+[1mindex 6933a54..e276570 100644[m
+[1m--- a/sites/all/modules/ctools/page_manager/plugins/tasks/term_view.inc[m
+[1m+++ b/sites/all/modules/ctools/page_manager/plugins/tasks/term_view.inc[m
+[36m@@ -106,44 +106,90 @@[m [mfunction page_manager_term_view_menu_alter(&$items, $task) {[m
+  * to run with it. If no one does, it passes through to Drupal core's[m
+  * term view, which is term_page_view().[m
+  */[m
+[31m-function page_manager_term_view_page($term) {[m
+[31m-  // Assign the term name as the page title, just as the original page[m
+[31m-  // callback did.[m
+[32m+[m[32mfunction page_manager_term_view_page($term, $depth = NULL) {[m
+[32m+[m[32m  // Prep the term to be displayed so all of the regular hooks are triggered.[m
+[32m+[m[32m  // Rather than calling taxonomy_term_page() directly, as it that would[m
+[32m+[m[32m  // potentially load nodes that were not necessary, execute some of the code[m
+[32m+[m[32m  // prior to identifying the correct CTools or Page Manager task handler and[m
+[32m+[m[32m  // only proceed with the rest of the code if necessary.[m
+[32m+[m
+[32m+[m[32m  // Assign the term name as the page title.[m
+   drupal_set_title($term->name);[m
+ [m
+[31m-  // While we ordinarily should never actually get feeds through here,[m
+[31m-  // just in case[m
+[32m+[m[32m  // If there is a menu link to this term, the link becomes the last part[m
+[32m+[m[32m  // of the active trail, and the link name becomes the page title.[m
+[32m+[m[32m  // Thus, we must explicitly set the page title to be the node title.[m
+[32m+[m[32m  $uri = entity_uri('taxonomy_term', $term);[m
+[32m+[m
+[32m+[m[32m  // Set the term path as the canonical URL to prevent duplicate content.[m
+[32m+[m[32m  drupal_add_html_head_link(array('rel' => 'canonical', 'href' => url($uri['path'], $uri['options'])), TRUE);[m
+[32m+[m[32m  // Set the non-aliased path as a default shortlink.[m
+[32m+[m[32m  drupal_add_html_head_link(array('rel' => 'shortlink', 'href' => url($uri['path'], array_merge($uri['options'], array('alias' => TRUE)))), TRUE);[m
+[32m+[m
+[32m+[m[32m  // Trigger the main[m
+[32m+[m[32m  $build = taxonomy_term_show($term);[m
+[32m+[m
+   // Load my task plugin[m
+   $task = page_manager_get_task('term_view');[m
+ [m
+   // Load the term into a context.[m
+   ctools_include('context');[m
+   ctools_include('context-task-handler');[m
+[31m-  $contexts = ctools_context_handler_get_task_contexts($task, '', array($term));[m
+[32m+[m[32m  $contexts = ctools_context_handler_get_task_contexts($task, '', array($term, $depth));[m
+ [m
+   if (empty($contexts)) {[m
+     return drupal_not_found();[m
+   }[m
+ [m
+[32m+[m[32m  // Build the full output using the configured CTools plugin.[m
+   $output = ctools_context_handler_render($task, '', $contexts, array($term->tid));[m
+   if ($output !== FALSE) {[m
+     return $output;[m
+   }[m
+ [m
+[31m-  $function = 'taxonomy_term_page';[m
+[32m+[m[32m  // Try loading an override plugin.[m
+   foreach (module_implements('page_manager_override') as $module) {[m
+     $call = $module . '_page_manager_override';[m
+     if (($rc = $call('term_view')) && function_exists($rc)) {[m
+[31m-      $function = $rc;[m
+[31m-      break;[m
+[32m+[m[32m      return $rc($node);[m
+     }[m
+   }[m
+ [m
+[31m-  // Otherwise, fall back.[m
+[31m-  if ($function == 'taxonomy_term_page') {[m
+[31m-    module_load_include('inc', 'taxonomy', 'taxonomy.pages');[m
+[32m+[m[32m  // Otherwise, fall back to replicating the output normally generated by[m
+[32m+[m[32m  // taxonomy_term_page().[m
+[32m+[m
+[32m+[m[32m  // Build breadcrumb based on the hierarchy of the term.[m
+[32m+[m[32m  $current = (object) array([m
+[32m+[m[32m    'tid' => $term->tid,[m
+[32m+[m[32m  );[m
+[32m+[m[32m  // @todo This overrides any other possible breadcrumb and is a pure hard-coded[m
+[32m+[m[32m  //   presumption. Make this behavior configurable per vocabulary or term.[m
+[32m+[m[32m  $breadcrumb = array();[m
+[32m+[m[32m  while ($parents = taxonomy_get_parents($current->tid)) {[m
+[32m+[m[32m    $current = array_shift($parents);[m
+[32m+[m[32m    $breadcrumb[] = l($current->name, 'taxonomy/term/' . $current->tid);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  $breadcrumb[] = l(t('Home'), NULL);[m
+[32m+[m[32m  $breadcrumb = array_reverse($breadcrumb);[m
+[32m+[m[32m  drupal_set_breadcrumb($breadcrumb);[m
+[32m+[m[32m  drupal_add_feed('taxonomy/term/' . $term->tid . '/feed', 'RSS - ' . $term->name);[m
+[32m+[m
+[32m+[m[32m  if ($nids = taxonomy_select_nodes($term->tid, TRUE, variable_get('default_nodes_main', 10))) {[m
+[32m+[m[32m    $nodes = node_load_multiple($nids);[m
+[32m+[m[32m    $build += node_view_multiple($nodes);[m
+[32m+[m[32m    $build['pager'] = array([m
+[32m+[m[32m      '#theme' => 'pager',[m
+[32m+[m[32m      '#weight' => 5,[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+[32m+[m[32m  else {[m
+[32m+[m[32m    $build['no_content'] = array([m
+[32m+[m[32m      '#prefix' => '<p>',[m
+[32m+[m[32m      '#markup' => t('There is currently no content classified with this term.'),[m
+[32m+[m[32m      '#suffix' => '</p>',[m
+[32m+[m[32m    );[m
+   }[m
+[31m-  return $function($term);[m
+[32m+[m[32m  return $build;[m
+ }[m
+ [m
+ /**[m
+[1mdiff --git a/sites/all/modules/ctools/page_manager/plugins/tasks/user_edit.inc b/sites/all/modules/ctools/page_manager/plugins/tasks/user_edit.inc[m
+[1mindex 30387ba..6d0135d 100644[m
+[1m--- a/sites/all/modules/ctools/page_manager/plugins/tasks/user_edit.inc[m
+[1m+++ b/sites/all/modules/ctools/page_manager/plugins/tasks/user_edit.inc[m
+[36m@@ -52,6 +52,17 @@[m [mfunction page_manager_user_edit_menu_alter(&$items, $task) {[m
+     $items['user/%user/edit']['page arguments'] = array(1);[m
+     $items['user/%user/edit']['file path'] = $task['path'];[m
+     $items['user/%user/edit']['file'] = $task['file'];[m
+[32m+[m[32m    if (($categories = _user_categories()) && (count($categories) > 1)) {[m
+[32m+[m[32m      foreach ($categories as $key => $category) {[m
+[32m+[m[32m        // 'account' is already handled by the MENU_DEFAULT_LOCAL_TASK.[m
+[32m+[m[32m        if ($category['name'] != 'account') {[m
+[32m+[m[32m          $items['user/%user_category/edit/' . $category['name']]['page callback'] = 'page_manager_user_edit_page';[m
+[32m+[m[32m          $items['user/%user_category/edit/' . $category['name']]['page arguments'] = array(1, 3);[m
+[32m+[m[32m          $items['user/%user_category/edit/' . $category['name']]['file path'] = $task['path'];[m
+[32m+[m[32m          $items['user/%user_category/edit/' . $category['name']]['file'] = $task['file'];[m
+[32m+[m[32m        }[m
+[32m+[m[32m      }[m
+[32m+[m[32m    }[m
+   }[m
+   else {[m
+     // automatically disable this task if it cannot be enabled.[m
+[36m@@ -69,9 +80,11 @@[m [mfunction page_manager_user_edit_menu_alter(&$items, $task) {[m
+  * to run with it. If no one does, it passes through to Drupal core's[m
+  * user edit, which is drupal_get_form('user_profile_form',$account).[m
+  */[m
+[31m-function page_manager_user_edit_page($account) {[m
+[32m+[m[32mfunction page_manager_user_edit_page($account, $category = 'account') {[m
+[32m+[m[32m  // Store the category on the user for later usage.[m
+[32m+[m[32m  $account->user_category = $category;[m
+ [m
+[31m-//  // Load my task plugin:[m
+[32m+[m[32m  // Load my task plugin:[m
+   $task = page_manager_get_task('user_edit');[m
+ [m
+   // Load the account into a context.[m
+[36m@@ -82,10 +95,8 @@[m [mfunction page_manager_user_edit_page($account) {[m
+   user_build_content($account);[m
+ [m
+   $output = ctools_context_handler_render($task, '', $contexts, array($account->uid));[m
+[31m-  [m
+   if (is_array($output)) {[m
+     $output = drupal_render($output);[m
+[31m-[m
+   }  [m
+   if ($output != FALSE) {[m
+     return $output;[m
+[36m@@ -102,6 +113,7 @@[m [mfunction page_manager_user_edit_page($account) {[m
+ [m
+   // Otherwise, fall back.[m
+   if ($function == 'drupal_get_form') {[m
+[32m+[m
+     //In order to ajax fields to work we need to run form_load_include.[m
+     //Hence we eschew drupal_get_form and manually build the info and[m
+     //call drupal_build_form.[m
+[1mdiff --git a/sites/all/modules/ctools/plugins/access/entity_bundle.inc b/sites/all/modules/ctools/plugins/access/entity_bundle.inc[m
+[1mindex ed68096..e07a048 100644[m
+[1m--- a/sites/all/modules/ctools/plugins/access/entity_bundle.inc[m
+[1m+++ b/sites/all/modules/ctools/plugins/access/entity_bundle.inc[m
+[36m@@ -1,5 +1,4 @@[m
+ <?php[m
+[31m-// $Id$[m
+ [m
+ /**[m
+  * @file[m
+[1mdiff --git a/sites/all/modules/ctools/plugins/access/entity_field_value.inc b/sites/all/modules/ctools/plugins/access/entity_field_value.inc[m
+[1mindex 1fb1fe8..e5857d8 100644[m
+[1m--- a/sites/all/modules/ctools/plugins/access/entity_field_value.inc[m
+[1m+++ b/sites/all/modules/ctools/plugins/access/entity_field_value.inc[m
+[36m@@ -98,6 +98,7 @@[m [mfunction ctools_entity_field_value_ctools_access_settings($form, &$form_state, $[m
+   foreach (element_children($form
