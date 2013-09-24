@@ -52,6 +52,17 @@ function page_manager_user_edit_menu_alter(&$items, $task) {
     $items['user/%user/edit']['page arguments'] = array(1);
     $items['user/%user/edit']['file path'] = $task['path'];
     $items['user/%user/edit']['file'] = $task['file'];
+    if (($categories = _user_categories()) && (count($categories) > 1)) {
+      foreach ($categories as $key => $category) {
+        // 'account' is already handled by the MENU_DEFAULT_LOCAL_TASK.
+        if ($category['name'] != 'account') {
+          $items['user/%user_category/edit/' . $category['name']]['page callback'] = 'page_manager_user_edit_page';
+          $items['user/%user_category/edit/' . $category['name']]['page arguments'] = array(1, 3);
+          $items['user/%user_category/edit/' . $category['name']]['file path'] = $task['path'];
+          $items['user/%user_category/edit/' . $category['name']]['file'] = $task['file'];
+        }
+      }
+    }
   }
   else {
     // automatically disable this task if it cannot be enabled.
@@ -69,9 +80,11 @@ function page_manager_user_edit_menu_alter(&$items, $task) {
  * to run with it. If no one does, it passes through to Drupal core's
  * user edit, which is drupal_get_form('user_profile_form',$account).
  */
-function page_manager_user_edit_page($account) {
+function page_manager_user_edit_page($account, $category = 'account') {
+  // Store the category on the user for later usage.
+  $account->user_category = $category;
 
-//  // Load my task plugin:
+  // Load my task plugin:
   $task = page_manager_get_task('user_edit');
 
   // Load the account into a context.
@@ -82,10 +95,8 @@ function page_manager_user_edit_page($account) {
   user_build_content($account);
 
   $output = ctools_context_handler_render($task, '', $contexts, array($account->uid));
-  
   if (is_array($output)) {
     $output = drupal_render($output);
-
   }  
   if ($output != FALSE) {
     return $output;
@@ -102,6 +113,7 @@ function page_manager_user_edit_page($account) {
 
   // Otherwise, fall back.
   if ($function == 'drupal_get_form') {
+
     //In order to ajax fields to work we need to run form_load_include.
     //Hence we eschew drupal_get_form and manually build the info and
     //call drupal_build_form.
