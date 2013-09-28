@@ -27,6 +27,9 @@
    if (!isset($experiment_nr)) {
      return '<h3>Please enter an experiment number in the URL (/database-fun/%experiment_nr).</h3>';
    }
+   if (!in_array($experiment_nr, array(1, 2 ,3))) {
+     return '<h3>There\'s no experiments going on here ;)</h3>'; 
+   }
    switch ($experiment_nr) {
      case 1:
        return _run_experiment_1();   
