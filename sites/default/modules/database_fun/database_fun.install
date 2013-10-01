@@ -1,0 +1,46 @@
+<?php 
+
+/**
+ * @file 
+ * 
+ * Install file for the Database fun module.
+ * 
+ * Sets up a persom test table for insert queries.
+ */
+
+function database_fun_schema() {
+  $schema['database_fun_persons'] = array(
+    'description' => 'Person test table for Database Fun experiments',
+    'fields' => array(
+      'pid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary ID: Unique ID for the person',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Test person name',
+        'default' => '',
+      ),
+      'address' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => 'Test person address',
+        'default' => '',
+      ),
+      'phone' => array(
+        'type' => 'varchar',
+        'length' => 25,
+        'not null' => TRUE,
+        'description' => 'Test person phone',
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('pid'),
+  );
+  return $schema;
+}
+
