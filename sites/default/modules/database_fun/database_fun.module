@@ -221,7 +221,7 @@ function _run_experiment_4() {
   $id = db_insert('imports')
     ->fields(array(
       'name' => 'Simon Holt',
-      'adress' => 'Schaldemosevej 15 st.th.',
+      'address' => 'Schaldemosevej 15 st.th.',
       'phone' => '555-1243',
     ))
     ->execute();

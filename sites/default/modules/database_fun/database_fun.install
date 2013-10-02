@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * @file
+ * 
+ * Install file for the Database fun module.
+ * 
+ * Sets up a Person test table to experiment on.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function database_fun_schema() {
+  $schema['database_fun_persons'] = array(
+    'description' => 'Test table for experiments in the Database fun module.',
+    'fields' => array(
+      'pid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary key: Unique person ID.',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Name of the person',
+      ),
+      'address' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The person\'s address',
+      ),
+      'phone' => array(
+        'type' => 'varchar',
+        'length' => 25,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The person\'s phone number',
+      ),
+    ),
+    'primary key' => array('pid'),
+  );
+  return $schema;
+}
