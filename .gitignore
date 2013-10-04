@@ -5,6 +5,11 @@ sites/*/settings*.php
 sites/*/files
 sites/*/private
 
+# Ignore eclipse settings files and folders
+.settings
+.project
+.buildpath
+
 # Ignore nested repositories.
 sites/default/modules/ding_navigation_box
 sites/default/modules/embed_facebook
