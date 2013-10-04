@@ -5,12 +5,6 @@ sites/*/settings*.php
 sites/*/files
 sites/*/private
 
-# Ignore eclipse workspace settings and buildpath
-.buildpath
-.project
-.settings
-nbproject
-
 # Ignore nested repositories.
 sites/default/modules/ding_navigation_box
 sites/default/modules/embed_facebook
