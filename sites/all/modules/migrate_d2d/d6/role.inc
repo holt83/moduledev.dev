@@ -12,8 +12,10 @@ class DrupalRole6Migration extends DrupalRoleMigration {
    * @param array $arguments
    */
   public function __construct(array $arguments) {
+    
     parent::__construct($arguments);
 
     $this->addUnmigratedDestinations(array('weight'));
+    
   }
 }
