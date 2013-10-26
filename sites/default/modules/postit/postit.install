@@ -3,7 +3,7 @@
 /**
  * Implements hook_schema().
  */
-function entity_fun_schema() {
+function postit_schema() {
   $schema['postit'] = array(
     'description' => 'The main store for our entity.',
     'fields' => array(

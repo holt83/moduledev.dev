@@ -1,6 +1,0 @@
-name = Entity Fun
-description = Provides an example of a custom entity created with the Entity module
-core = 7.x
-package = Drupal 7 development
-files[] = entity_fun.module
-dependencies[] = entity

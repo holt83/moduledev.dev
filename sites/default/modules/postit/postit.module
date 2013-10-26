@@ -1,0 +1,92 @@
+<?php
+
+/**
+ * @file
+ * 
+ * Provides an example of creation of a custom entity using the entity module.
+ */
+
+/**
+ * Implements hook_entity_info().
+ */
+function postit_entity_info() {
+  $entity_info['postit'] = array(
+    'label' => t('Postit Note'),
+    'controller class' => 'PostItController',
+    'base table' => 'postit',
+    'uri callback' => 'postit_uri',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'pid',
+    ),
+    'static cache' => TRUE,
+    'bundles' => array(
+      'postit' => array(
+        'label' => 'PostIt',
+        'admin' => array(
+          'path' => 'admin/structure/postit/manage',
+          'access arguments' => array('administer postits'),
+        ),
+      ),
+    ),
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full Postit'),
+        'custom settings' => FALSE,
+      ),
+    ),
+  );
+  return $entity_info;
+}
+ 
+/**
+ * Entity uri callback funtion for the Postit entity.
+ */
+function postit_uri($postit) {
+   return array(
+     'path' => 'postit/' . $postit->id,
+   );
+}
+ 
+/**
+ * Load a Postit entity from the database.
+ */
+function postit_load($pid = NULL, $reset = FALSE) {
+  $pids = (isset($pid) ? array($pid) : array());
+  $postit = postit_load_multiple($pids, $reset);
+  return $postit ? reset($postit) : FALSE;
+}
+ 
+/**
+ * Load Postit entities from the database.
+ */
+function postit_load_multiple($pids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('post_it', $pids, $conditions, $reset);
+}
+
+/**
+ * Implements hook_menu().
+ */
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
