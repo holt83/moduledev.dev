@@ -27,21 +27,11 @@
    if (!isset($experiment_nr)) {
      return '<h3>Please enter an experiment number in the URL (/database-fun/%experiment_nr).</h3>';
    }
-   if (!in_array($experiment_nr, array(1, 2 ,3))) {
+   if (!in_array($experiment_nr, array(1, 2 ,3, 4, 5))) {
      return '<h3>There\'s no experiments going on here ;)</h3>'; 
    }
-   switch ($experiment_nr) {
-     case 1:
-       return _run_experiment_1();   
-       break;
-     case 2:
-       return _run_experiment_2();
-       break;
-     case 3:
-       return _run_experiment_3();
-     default:
-       return '<h3>There\'s no experiments going on here ;)</h3>';
-   }
+   $experiment_func = "_run_experiment_$experiment_nr";
+   return $experiment_func();
  }
  
  /**
@@ -183,7 +173,7 @@ function _run_experiment_2() {
  * Dynamic select query.
  * 
  * This experiment is essentially the same as experiment 2, but here we use 
- * object chaning to make the code much more compact.
+ * object chaining and no comments to make the code much more compact.
  */
 function _run_experiment_3() {
   $query = db_select('node', 'n');
@@ -191,7 +181,7 @@ function _run_experiment_3() {
   $query->addField($users_alias, 'name', 'username');
   $result = $query
     ->fields('n', array('nid', 'title'))
-    ->condition('n.created', REQUEST_TIME - (7 * 24 * 60 * 60), '>=')
+    ->condition('n.created', REQUEST_TIME - (30 * 24 * 60 * 60), '>=')
     ->orderBy('n.created', 'DESC')
     ->range(0, 10)
     ->addTag('node_access')
@@ -203,7 +193,7 @@ function _run_experiment_3() {
       '@username' => empty($record->username) ? 'Anonymous' : $record->username,
     ));
   }
-  $list_title = t('The 10 newest created nodes within the past 7 days fetched with a dynamic query:');
+  $list_title = t('The 10 newest created nodes within the past 30 days fetched with a dynamic query:');
   return _setup_experiment_render_array('Experiment 3', $list_title, 'ul', $items);
 }
 
@@ -212,22 +202,87 @@ function _run_experiment_3() {
  * 
  * Dynamic insert query.
  * 
- * Experiment using Drupal's query builder mechanism to build dynamic insert
- * queries.
+ * This experment builds a dynamic insert query that inserts a record in the
+ * module's test person table.
  */
 function _run_experiment_4() {
   // Start with the db_insert construtor function and then use method chaining
-  // to setup the insert query.
-  $id = db_insert('imports')
+  // to setup and execute the insert query.
+  $id = db_insert('database_fun_persons')
     ->fields(array(
       'name' => 'Simon Holt',
       'address' => 'Schaldemosevej 15 st.th.',
       'phone' => '555-1243',
     ))
     ->execute();
-  // If there is an auto-increment field on the {imports} table the generated
+  // If there is an auto-increment field on the table the generated
   // ID is the $id returned from the db_insert() method.
-  
+  // Setup a render array to show the generated ID of the inserted record.
+  return array(
+    '#prefix' => '<h2>',
+    '#suffix' => '</h2>',
+    '#markup' => t('1 record was inserted. Generated ID: @id', array(
+      '@id' => $id,
+    )),
+  );
+}
+
+/**
+ * Experiment 5.
+ * 
+ * Dynamic insert query.
+ * 
+ * This experiment uses the query builder to setup a multi-insert query.
+ */
+function _run_experiment_5() {
+  // First we must build an array to specify the fields we are going to use in
+  // the query.
+  $fields = array('name', 'address', 'phone');
+  // Then we build a value-array with the values for our query.
+  $values[] = array(
+    'name' => 'Grocho',
+    'address' => '123 Casablanca Ave.',
+    'phone' => '410-1512',
+  );
+  $values[] = array(
+    'name' => 'Chico',
+    'address' => '465 Races st.',
+    'phone' => '512-1888',  
+  );
+  $values[] = array(
+    'name' => 'Harpo',
+    'address' => '789 Horn Ave.',
+    'phone' => '423-5232',  
+  );
+  $values[] = array(
+    'name' => 'Zeppo',
+    'address' => '22 University Way',
+    'phone' => '321-5341',  
+  );
+  // Create the insert query and register the $fields array.
+  $insert_query = db_insert('database_fun_persons')->fields($fields);
+  // Iterate over the $values array and register the values to use in the query.
+  foreach ($values as $value) {
+    $insert_query->values($value);
+  }
+  $insert_query->execute();
+  // Build a select query to fetch and show the inserted records.
+  $select_query = db_select('database_fun_persons', 'p');
+  $result = $select_query
+    ->fields('p', array('pid', 'name', 'address', 'phone'))
+    ->orderBy('p.pid', 'DESC')
+    ->range(0, 4)
+    ->execute();
+  $items = array();
+  foreach ($result as $record) {
+    $items[] = t('ID: @pid | Name: @name | Address: @address', array(
+      '@pid' => $record->pid,
+      '@name' => $record->name,
+      '@address' => $record->address,
+    ));
+  }
+  $list_title = t('The records was inserted. Here are the results: ');
+  return _setup_experiment_render_array('Experiment 5', $list_title, 'ol', $items);
 }
 
 function _setup_experiment_render_array($title, $list_title, $type, $items) {
