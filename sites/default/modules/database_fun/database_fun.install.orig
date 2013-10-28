@@ -1,0 +1,88 @@
+<<<<<<< HEAD
+<?php
+
+/**
+ * @file
+ * 
+ * Install file for the Database fun module.
+ * 
+ * Sets up a Person test table to experiment on.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function database_fun_schema() {
+  $schema['database_fun_persons'] = array(
+    'description' => 'Test table for experiments in the Database fun module.',
+=======
+<?php 
+
+/**
+ * @file 
+ * 
+ * Install file for the Database fun module.
+ * 
+ * Sets up a persom test table for insert queries.
+ */
+
+function database_fun_schema() {
+  $schema['database_fun_persons'] = array(
+    'description' => 'Person test table for Database Fun experiments',
+>>>>>>> origin/master
+    'fields' => array(
+      'pid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+<<<<<<< HEAD
+        'description' => 'Primary key: Unique person ID.',
+=======
+        'description' => 'Primary ID: Unique ID for the person',
+>>>>>>> origin/master
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+<<<<<<< HEAD
+        'default' => '',
+        'description' => 'Name of the person',
+=======
+        'description' => 'Test person name',
+        'default' => '',
+>>>>>>> origin/master
+      ),
+      'address' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+<<<<<<< HEAD
+        'default' => '',
+        'description' => 'The person\'s address',
+=======
+        'description' => 'Test person address',
+        'default' => '',
+>>>>>>> origin/master
+      ),
+      'phone' => array(
+        'type' => 'varchar',
+        'length' => 25,
+        'not null' => TRUE,
+<<<<<<< HEAD
+        'default' => '',
+        'description' => 'The person\'s phone number',
+=======
+        'description' => 'Test person phone',
+        'default' => '',
+>>>>>>> origin/master
+      ),
+    ),
+    'primary key' => array('pid'),
+  );
+  return $schema;
+<<<<<<< HEAD
+}
+=======
+}
+
+>>>>>>> origin/master
