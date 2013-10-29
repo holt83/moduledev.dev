@@ -5,13 +5,6 @@ package = Drupal 7 development
 
 files[] = postit.module
 files[] = postit.install
-files[] = postit.controller.inc
+files[] = postit.admin.inc
 
 dependencies[] = entity
-dependencies[] = features
-dependencies[] = text
-
-features[features_api][] = api:2
-features[field_base][] = field_simple_textfield
-features[field_instance][] = postit-postit-field_simple_textfield
-project path = sites/default/modules

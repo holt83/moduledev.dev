@@ -12,9 +12,9 @@
 function postit_entity_info() {
   $entity_info['postit'] = array(
     'label' => t('Postit Note'),
+    'entity class' => 'PostIt',
     'controller class' => 'PostItController',
     'base table' => 'postit',
-    'uri callback' => 'postit_uri',
     'fieldable' => TRUE,
     'entity keys' => array(
       'id' => 'pid',
@@ -29,27 +29,59 @@ function postit_entity_info() {
         ),
       ),
     ),
-    'view modes' => array(
-      'full' => array(
-        'label' => t('Full Postit'),
-        'custom settings' => FALSE,
-      ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'creation callback' => 'postit_create',
+    'access callback' => 'postit_access',
+    'module' => 'postit',
+    'admin ui' => array(
+      'path' => 'admin/content/postit',
+      'file' => 'postit.admin.inc',
+      'controller class' => 'PostItUIController',
+      'menu wildcard' => '%postit',
     ),
   );
   return $entity_info;
 }
- 
+
 /**
- * Entity uri callback funtion for the Postit entity.
+ * Determines whether the given user has access to a postit note.
+ * 
+ * @param $op
+ *   The operation being performed. One of 'view', 'update', 'create', 'delete'
+ *   or just 'edit' (being the same as 'create' or 'update').
+ * @param $postit
+ *   Optionally a postit. If nothing is given, access for all postits is 
+ *   determined. 
+ * @param $account
+ *   The user to check for. Leave it to NULL to check for the global user.
  */
-function postit_uri($postit) {
-   return array(
-     'path' => 'postit/' . $postit->id,
-   );
+function postit_access($op, $postit = NULL, $account = NULL) {
+  if (user_access('administer postits', $account)) {
+    return TRUE;
+  }
+  if (in_array($op, array('view', 'update', 'create', 'delete'))) {
+    if (user_access($op . ' postits', $account)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
- 
+
 /**
- * Load a Postit entity from the database.
+ * Fetch a postit object from the database. 
+ * 
+ * Note that the wildcard specified in hook_entity_info() much match the prefix
+ * for this function for Drupal to pick it up.
+ *
+ * @param $pid
+ *   Integer specifying the postit id.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   A fully-loaded $postit object or FALSE if it cannot be loaded.
+ *
+ * @see model_load_multiple()
  */
 function postit_load($pid = NULL, $reset = FALSE) {
   $pids = (isset($pid) ? array($pid) : array());
@@ -58,17 +90,59 @@ function postit_load($pid = NULL, $reset = FALSE) {
 }
  
 /**
- * Load Postit entities from the database.
+ * Load multiple postits based on certain conditions.
+ *
+ * @param $pids
+ *   An array of postit IDs.
+ * @param $conditions
+ *   An array of conditions to match against the {postit} table.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   An array of postit objects, indexed by pid.
+ *
+ * @see entity_load()
+ * @see model_load()
  */
 function postit_load_multiple($pids = array(), $conditions = array(), $reset = FALSE) {
   return entity_load('postit', $pids, $conditions, $reset);
 }
 
 /**
+ * Delete a postit
+ */
+
+
+/**
  * Save a Postit note in the database.
  */
 function postit_save($postit) {
   return entity_get_controller('postit')->save($postit);
+}
+
+/**
+ * The class used for postit entities.
+ */
+class PostIt extends Entity {
+  
+  public function __construct($values = array()) {
+    parent::__construct($values, 'postit');
+  }
+  
+  /**
+   * Specifies the default label, which is picked up by label() by default.
+   */
+  protected function defaultLabel() {
+    return '';
+  }
+
+  /**
+   * Specifies the default uri, which is picked up by uri() by default.
+   */
+  protected function defaultUri() {
+    return array('path' => 'postit' . $this->pid);
+  }  
+  
 }
 
 /**
@@ -107,10 +181,16 @@ function postit_permission() {
       'restrict access' => TRUE,  
     ),
     'view postits' => array(
-      'title' => t('View Postits'),
+      'title' => t('View PostIts'),
     ),
-    'create postit' => array(
-      'title' => t('Create Postit'),
+    'create postits' => array(
+      'title' => t('Create PostIts'),
+    ),
+    'update postits' => array(
+      'title' => t('Edit PostIts'),
+    ),
+    'delete postits' => array(
+      'title' => t('Delete PostIts'),
     ),
   );
 }
