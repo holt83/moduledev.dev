@@ -162,14 +162,47 @@ class PostIt extends Entity {
    * Specifies the default uri, which is picked up by uri() by default.
    */
   protected function defaultUri() {
-    return array('path' => 'postit' . $this->pid);
+    return array('path' => 'postit/' . $this->pid);
   }  
+  
+}
+
+/**
+ * The controller class used for postit entities.
+ */
+class PostItController extends EntityAPIController {
+  
+  public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+  
+  /**
+   * Create a postit - First setup the values that are the specific to the 
+   * postit schema, then go through the parent imlplementation.
+   */
+  public function create(array $values = array()) {
+    // Add values that are specific to our Postit
+    $values += array(
+      'pid' => '',
+      'note' => '',
+      'is_new' => TRUE,
+      'title' => '',
+    );
+    $postit = parent::create($values);
+    return $postit;    
+  }
+  
+  /**
+   * Override the buildContent function to add entity specific fields.
+   */
+  
   
 }
 
 /**
  * Implements hook_menu().
  */
+/*
 function postit_menu() {
   $items['admin/structure/postit/manage'] = array(
     'title' => 'Postit Admin',
@@ -191,7 +224,7 @@ function postit_menu() {
     'access arguments' => array('create postit'),
   );
   return $items;
-}
+}*/
 
 /**
  * Implements hook_permission().
@@ -235,7 +268,10 @@ function postit_page_title($postit) {
  * Page callback
  */
 function postit_page_view($postit, $view_mode = 'full') {
-  $postit->content = array();
+  $controller = entity_get_controller('postit');
+  $content = $controller->view(array($postit->pid => $postit));
+  return $content;
+  /*$postit->content = array();
   // Build field content.
   field_attach_prepare_view('postit', array($postit->pid => $postit), $view_mode);
   entity_prepare_view('postit', array($postit->pid => $postit));
@@ -245,7 +281,7 @@ function postit_page_view($postit, $view_mode = 'full') {
     '#suffix' => '</p>',
     '#markup' => $postit->note,
   );
-  return $postit->content;
+  return $postit->content;*/
 }
 
 /**
