@@ -111,12 +111,34 @@ function postit_load_multiple($pids = array(), $conditions = array(), $reset = F
 /**
  * Delete a postit
  */
-
+function postit_delete(PostIt $postit) {
+  $postit->delete();
+}
 
 /**
- * Save a Postit note in the database.
+ * Delete multiple postits.
+ * 
+ * @param $pids
+ *   An array of postit IDs.
  */
-function postit_save($postit) {
+function postit_delete_multiple($pids = array()) {
+  entity_get_controller('postit')->delete($pids);
+}
+
+/**
+ * Create and return a postit object.
+ */
+function postit_create($values = array()) {
+  return entity_get_controller('postit')->create($values);
+}
+
+/**
+ * Saves a postit to the database.
+ * 
+ * @param $postit
+ *   The postit object.
+ */
+function postit_save(PostIt $postit) {
   return entity_get_controller('postit')->save($postit);
 }
 
