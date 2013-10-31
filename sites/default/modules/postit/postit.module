@@ -45,6 +45,30 @@ function postit_entity_info() {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function postit_permission() {
+  return array(
+    'administer postits' => array(
+      'title' => t('Administer Postits'),
+      'restrict access' => TRUE,  
+    ),
+    'view postits' => array(
+      'title' => t('View PostIts'),
+    ),
+    'create postits' => array(
+      'title' => t('Create PostIts'),
+    ),
+    'update postits' => array(
+      'title' => t('Edit PostIts'),
+    ),
+    'delete postits' => array(
+      'title' => t('Delete PostIts'),
+    ),
+  );
+}
+
+/**
  * Determines whether the given user has access to a postit note.
  * 
  * @param $op
@@ -85,7 +109,7 @@ function postit_access($op, $postit = NULL, $account = NULL) {
  */
 function postit_load($pid = NULL, $reset = FALSE) {
   $pids = (isset($pid) ? array($pid) : array());
-  $postit = postit_load_multiple($pids, $reset);
+  $postit = postit_load_multiple($pids, array(), $reset);
   return $postit ? reset($postit) : FALSE;
 }
  
@@ -143,6 +167,26 @@ function postit_save(PostIt $postit) {
 }
 
 /**
+ * Page callback
+ */
+function postit_page_view($postit, $view_mode = 'full') {
+  $controller = entity_get_controller('postit');
+  $content = $controller->view(array($postit->pid => $postit));
+  return $content;
+  /*$postit->content = array();
+  // Build field content.
+  field_attach_prepare_view('postit', array($postit->pid => $postit), $view_mode);
+  entity_prepare_view('postit', array($postit->pid => $postit));
+  $postit->content += field_attach_view('postit', $postit, $view_mode);
+  $postit->content['note'] = array(
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+    '#markup' => $postit->note,
+  );
+  return $postit->content;*/
+}
+
+/**
  * The class used for postit entities.
  */
 class PostIt extends Entity {
@@ -195,14 +239,21 @@ class PostItController extends EntityAPIController {
   /**
    * Override the buildContent function to add entity specific fields.
    */
-  
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+    $content['note'] = array(
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+      '#markup' => $entity->note,
+    );
+    return $content;
+  }
   
 }
 
 /**
  * Implements hook_menu().
  */
-/*
 function postit_menu() {
   $items['admin/structure/postit/manage'] = array(
     'title' => 'Postit Admin',
@@ -210,7 +261,7 @@ function postit_menu() {
     'page callback' => 'postit_info',
     'access arguments' => array('administer postits'),
   );
-  $items['postit/%postit'] = array(
+  /*$items['postit/%postit'] = array(
     'title callback' => 'postit_page_title',
     'title arguments' => array(1),
     'page callback' => 'postit_page_view',
@@ -222,32 +273,8 @@ function postit_menu() {
     'title' => 'Add Postit!',
     'page callback' => 'postit_add',
     'access arguments' => array('create postit'),
-  );
+  );*/
   return $items;
-}*/
-
-/**
- * Implements hook_permission().
- */
-function postit_permission() {
-  return array(
-    'administer postits' => array(
-      'title' => t('Administer Postits'),
-      'restrict access' => TRUE,  
-    ),
-    'view postits' => array(
-      'title' => t('View PostIts'),
-    ),
-    'create postits' => array(
-      'title' => t('Create PostIts'),
-    ),
-    'update postits' => array(
-      'title' => t('Edit PostIts'),
-    ),
-    'delete postits' => array(
-      'title' => t('Delete PostIts'),
-    ),
-  );
 }
 
 /**
@@ -259,34 +286,14 @@ function postit_info() {
 
 /**
  * Page Title callback
- */
+ *//*
 function postit_page_title($postit) {
   return $postit->pid;
-}
+}*/
 
 /**
  * Page callback
- */
-function postit_page_view($postit, $view_mode = 'full') {
-  $controller = entity_get_controller('postit');
-  $content = $controller->view(array($postit->pid => $postit));
-  return $content;
-  /*$postit->content = array();
-  // Build field content.
-  field_attach_prepare_view('postit', array($postit->pid => $postit), $view_mode);
-  entity_prepare_view('postit', array($postit->pid => $postit));
-  $postit->content += field_attach_view('postit', $postit, $view_mode);
-  $postit->content['note'] = array(
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
-    '#markup' => $postit->note,
-  );
-  return $postit->content;*/
-}
-
-/**
- * Page callback
- */
+ *//*
 function postit_add() {
   $postit = (object) array(
     'pid' => '',
@@ -294,11 +301,12 @@ function postit_add() {
     'note' => '',
   );
   return drupal_get_form('postit_add_form', $postit);
-}
+}*/
+
 
 /**
  * Form builder for adding new Postits.
- */
+ *//*
 function postit_add_form($form, &$form_state, $postit) {
   $form['note'] = array(
     '#type' => 'textfield',
@@ -311,25 +319,25 @@ function postit_add_form($form, &$form_state, $postit) {
   );
   field_attach_form('postit', $postit, $form, $form_state);
   return $form;
-}
+}*/
 
 /**
  * Validate callback for the postit_add_form.
- */
+ *//*
 function postit_add_form_validate($form, &$form_state) {
   $postit_submission = (object)$form_state['values'];
   field_attach_form_validate('postit', $postit_submission, $form, $form_state);
-}
+}*/
 
 /**
  * Submit callback for the postit_add_form.
- */
+ */ /*
 function postit_add_form_submit($form, &$form_state) {
   $postit_submission = (object)$form_state['values'];
   field_attach_submit('postit', $postit_submission, $form, $form_state);
   $postit = postit_save($postit_submission);
   $form_state['redirect'] = "postit/$postit->pid";
-}
+}*/
 
 /**
  * Implements hook_field_extra_fields().
