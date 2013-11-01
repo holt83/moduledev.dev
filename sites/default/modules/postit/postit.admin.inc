@@ -42,7 +42,6 @@ function postit_form($form, &$form_state, $postit, $op = 'edit') {
     '#value' => t('Save PostIt'),
     '#weight' => 40,
   );
-  // This shouldn't be needed?
   field_attach_form('postit', $postit, $form, $form_state);
   return $form;  
 }
