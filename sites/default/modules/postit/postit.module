@@ -23,6 +23,7 @@ function postit_entity_info() {
     'bundles' => array(
       'postit' => array(
         'label' => 'PostIt',
+        // This admin UI will take care of managing fields on the postit entity. 
         'admin' => array(
           'path' => 'admin/structure/postit/manage',
           'access arguments' => array('administer postits'),
@@ -34,6 +35,7 @@ function postit_entity_info() {
     'creation callback' => 'postit_create',
     'access callback' => 'postit_access',
     'module' => 'postit',
+    // This admin UI wil take care of CRUD operations on postits.
     'admin ui' => array(
       'path' => 'admin/content/postit',
       'file' => 'postit.admin.inc',
@@ -43,6 +45,38 @@ function postit_entity_info() {
   );
   return $entity_info;
 }
+
+/**
+ * Implements hook_menu().
+ * 
+ * The UIController specified in hook_entity_info() takes care of setting up an
+ * admin UI for CRUD operations on postits. For managing fields on the postit
+ * and for viewing a single postit, we have to rely on the CORE API.
+ *  
+ */
+function postit_menu() {
+  $items['admin/structure/postit/manage'] = array(
+    'title' => 'Postit Admin',
+    'description' => t('Manage Postit structure.'),
+    'page callback' => 'postit_info',
+    'access arguments' => array('administer postits'),
+  );
+  $items['postit/%postit'] = array(
+    'page callback' => 'postit_page_view',
+    'page arguments' => array(1),
+    'access arguments' => array('view postits'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Page callback for the
+ */
+function postit_info() {
+  return t('Welcome to the administration page for your Postits!');
+}
+
 
 /**
  * Implements hook_permission().
@@ -69,6 +103,26 @@ function postit_permission() {
 }
 
 /**
+ * Implements hook_field_extra_fields().
+ * 
+ * We implement this hook to have our internal 'note' field displayed on the
+ * field management UI.
+ */
+function postit_field_extra_fields() {
+  $return = array();
+  $return['postit']['postit'] = array(
+    'form' => array(
+      'note' => array(
+        'label' => t('Note'),
+        'description' => t('Postit Note'),
+        'weight' => 0,
+      ),
+    ),
+  );
+  return $return;
+}
+
+/**
  * Determines whether the given user has access to a postit note.
  * 
  * @param $op
@@ -84,7 +138,7 @@ function postit_access($op, $postit = NULL, $account = NULL) {
   if (user_access('administer postits', $account)) {
     return TRUE;
   }
-  if (in_array($op, array('view', 'update', 'create', 'delete'))) {
+  if (in_array($op, array('update', 'create', 'delete'))) {
     if (user_access($op . ' postits', $account)) {
       return TRUE;
     }
@@ -172,18 +226,8 @@ function postit_save(PostIt $postit) {
 function postit_page_view($postit, $view_mode = 'full') {
   $controller = entity_get_controller('postit');
   $content = $controller->view(array($postit->pid => $postit));
+  file_put_contents("/home/drupalpro/debug/debug.txt", print_r($content['postit'][$postit->pid] , TRUE), FILE_APPEND);
   return $content;
-  /*$postit->content = array();
-  // Build field content.
-  field_attach_prepare_view('postit', array($postit->pid => $postit), $view_mode);
-  entity_prepare_view('postit', array($postit->pid => $postit));
-  $postit->content += field_attach_view('postit', $postit, $view_mode);
-  $postit->content['note'] = array(
-    '#prefix' => '<p>',
-    '#suffix' => '</p>',
-    '#markup' => $postit->note,
-  );
-  return $postit->content;*/
 }
 
 /**
@@ -199,7 +243,7 @@ class PostIt extends Entity {
    * Specifies the default label, which is picked up by label() by default.
    */
   protected function defaultLabel() {
-    return '';
+    return 'PostIt Note with ID: ' . $this->pid;
   }
 
   /**
@@ -240,127 +284,30 @@ class PostItController extends EntityAPIController {
    * Override the buildContent function to add entity specific fields.
    */
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    // Let the parent class build it's field content first.
     $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+    // We show our internal note field using a theming function from the FIELD
+    // API, so the behaviour will be the same as other fields added with the 
+    // FIELD API.
     $content['note'] = array(
-      '#prefix' => '<p>',
-      '#suffix' => '</p>',
-      '#markup' => $entity->note,
+      '#theme' => 'field',
+      '#weight' => -40,
+      '#title' => t('Note'),
+      '#label_display' => 'hidden',
+      '#access' => TRUE,
+      '#view_mode' => 'full',
+      '#language' => LANGUAGE_NONE,
+      '#field_name' => 'field_fake_note',
+      '#field_type' => 'text',
+      '#entity_type' => 'postit',
+      '#bundle' => 'postit',
+      '#items' => array(array('value' => $entity->note)),
+      '#formatter' => 'text_default',
+       0 => array('#markup' => check_plain($entity->note)),
     );
     return $content;
   }
   
-}
-
-/**
- * Implements hook_menu().
- */
-function postit_menu() {
-  $items['admin/structure/postit/manage'] = array(
-    'title' => 'Postit Admin',
-    'description' => t('Manage Postit structure.'),
-    'page callback' => 'postit_info',
-    'access arguments' => array('administer postits'),
-  );
-  /*$items['postit/%postit'] = array(
-    'title callback' => 'postit_page_title',
-    'title arguments' => array(1),
-    'page callback' => 'postit_page_view',
-    'page arguments' => array(1),
-    'access arguments' => array('view postits'),
-    'type' => MENU_CALLBACK,
-  );
-  $items['postit/add'] = array(
-    'title' => 'Add Postit!',
-    'page callback' => 'postit_add',
-    'access arguments' => array('create postit'),
-  );*/
-  return $items;
-}
-
-/**
- * Page callback
- */
-function postit_info() {
-  return t('Welcome to the administration page for your Postits!.');
-}
-
-/**
- * Page Title callback
- *//*
-function postit_page_title($postit) {
-  return $postit->pid;
-}*/
-
-/**
- * Page callback
- *//*
-function postit_add() {
-  $postit = (object) array(
-    'pid' => '',
-    'type' => 'postit',
-    'note' => '',
-  );
-  return drupal_get_form('postit_add_form', $postit);
-}*/
-
-
-/**
- * Form builder for adding new Postits.
- *//*
-function postit_add_form($form, &$form_state, $postit) {
-  $form['note'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Note'),
-    '#required' => TRUE,
-  );
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-  );
-  field_attach_form('postit', $postit, $form, $form_state);
-  return $form;
-}*/
-
-/**
- * Validate callback for the postit_add_form.
- *//*
-function postit_add_form_validate($form, &$form_state) {
-  $postit_submission = (object)$form_state['values'];
-  field_attach_form_validate('postit', $postit_submission, $form, $form_state);
-}*/
-
-/**
- * Submit callback for the postit_add_form.
- */ /*
-function postit_add_form_submit($form, &$form_state) {
-  $postit_submission = (object)$form_state['values'];
-  field_attach_submit('postit', $postit_submission, $form, $form_state);
-  $postit = postit_save($postit_submission);
-  $form_state['redirect'] = "postit/$postit->pid";
-}*/
-
-/**
- * Implements hook_field_extra_fields().
- */
-function postit_field_extra_fields() {
-  $return = array();
-  $return['postit']['postit'] = array(
-    'form' => array(
-      'note' => array(
-        'label' => t('Note'),
-        'description' => t('Postit Note'),
-        'weight' => 0,
-      ),
-    ),
-    'display' => array(
-      'note' => array(
-        'label' => t('Note'),
-        'description' => t('Postit Note'),
-        'weight' => 0,
-      ),
-    ),    
-  );
-  return $return;
 }
 
  

@@ -17,7 +17,7 @@ class PostItUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
-    $items[$this->path]['description'] = t('Manage PostIts.');
+    $items[$this->path]['description'] = t('Create, Edit and Delete Postits.');
     return $items;
   }
   
@@ -42,6 +42,7 @@ function postit_form($form, &$form_state, $postit, $op = 'edit') {
     '#value' => t('Save PostIt'),
     '#weight' => 40,
   );
+  // This shouldn't be needed?
   field_attach_form('postit', $postit, $form, $form_state);
   return $form;  
 }
