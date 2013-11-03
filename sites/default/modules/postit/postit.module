@@ -123,6 +123,18 @@ function postit_field_extra_fields() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function postit_theme() {
+  return array(
+    'postit' => array(
+      'render element' => 'elements',
+      'template' => 'postit',
+    ),
+  );
+}
+
+/**
  * Determines whether the given user has access to a postit note.
  * 
  * @param $op
@@ -224,9 +236,8 @@ function postit_save(PostIt $postit) {
  * Page callback
  */
 function postit_page_view($postit, $view_mode = 'full') {
-  $controller = entity_get_controller('postit');
+  $controller = entity_get_controller('postit'); 
   $content = $controller->view(array($postit->pid => $postit));
-  file_put_contents("/home/drupalpro/debug/debug.txt", print_r($content['postit'][$postit->pid] , TRUE), FILE_APPEND);
   return $content;
 }
 
@@ -297,7 +308,7 @@ class PostItController extends EntityAPIController {
       '#access' => TRUE,
       '#view_mode' => 'full',
       '#language' => LANGUAGE_NONE,
-      '#field_name' => 'field_fake_note',
+      '#field_name' => 'field_primary_note',
       '#field_type' => 'text',
       '#entity_type' => 'postit',
       '#bundle' => 'postit',

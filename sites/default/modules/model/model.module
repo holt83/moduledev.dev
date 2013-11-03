@@ -312,7 +312,7 @@ function model_page_title(Model $model){
  * @todo - get rid of drupal_set_title();
  */
 function model_page_view($model, $view_mode = 'full') {    
-  $controller = entity_get_controller('model');  
+  $controller = entity_get_controller('model'); 
   $content = $controller->view(array($model->model_id => $model));
   drupal_set_title($model->name);
   return $content;
