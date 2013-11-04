@@ -1,7 +1,7 @@
 name = Postit!
 description = Provides a Postit Entity
 core = 7.x
-package = Drupal 7 development
+package = An Example
 
 files[] = postit.module
 files[] = postit.install
