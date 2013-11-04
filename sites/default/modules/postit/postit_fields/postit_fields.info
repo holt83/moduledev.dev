@@ -1,0 +1,13 @@
+name = Postit Fields
+description = Provides additional fields for the postit entity.
+core = 7.x
+package = Features
+version = 7.x-1.0
+project = postit_fields
+dependencies[] = features
+dependencies[] = postit
+dependencies[] = text
+features[features_api][] = api:2
+features[field_base][] = field_additional_note
+features[field_instance][] = postit-postit-field_additional_note
+project path = sites/default/modules/postit

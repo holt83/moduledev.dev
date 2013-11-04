@@ -8,3 +8,4 @@ files[] = postit.install
 files[] = postit.admin.inc
 
 dependencies[] = entity
+
