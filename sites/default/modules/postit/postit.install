@@ -24,3 +24,10 @@ function postit_schema() {
   );
   return $schema;
 }
+
+function postit_install() {
+  $postit = entity_create('postit', array('type' => 'postit'));
+  $postit->note = "A little create on install test postit.";
+  postit_save($postit);
+}
+
