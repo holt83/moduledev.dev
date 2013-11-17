@@ -1,0 +1,205 @@
+<?php
+
+/**
+ * @file
+ * Module file for the Ding navigation item module.
+ */
+
+/**
+ * Implements hook_entity_info().
+ */
+function ding_navigation_item_entity_info() {
+  $entity_info['ding_navigation_item'] = array(
+    'label' => t('Ding navigation item'),
+    'entity class' => 'DingNavigationItem',
+    'controller class' => 'DingNavigationItemController',
+    'base table' => 'ding_navigation_item',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'dniid',
+    ),
+    'static cache' => TRUE,
+    'bundles' => array(
+      'ding_navigation_item' => array(
+        'label' => t('Ding navigation item'), 
+        'admin' => array(
+          'path' => 'admin/structure/ding-navigation-box/manage',
+          'access arguments' => array('administer ding navigation box'),
+        ),
+      ),
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'module' => 'ding_navigation_item',
+  );
+  return $entity_info;
+}
+
+/**
+ * Implements hook_menu(). 
+ */
+function ding_navigation_item_menu() {
+  $items['admin/structure/ding-navigation-box/manage'] = array(
+    'title' => 'Navigation Box Admin',
+    'description' => t('Manage the Ding Navigation Box and it\'s content.'),
+    'page callback' => 'ding_navigation_box_page_manage',
+    'access arguments' => array('administer ding navigation box'),
+  );
+  $items['ding-navigation-item/%ding_navigation_item/edit'] = array(
+    'page callback' => 'ding_navigation_item_page_edit',
+    'page arguments' => array(1),
+    'access arguments' => array('administer ding navigation box'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Menu callback: admin/structure/ding-navigation-box/manage
+ */
+function ding_navigation_box_page_manage() {
+  return t('Not much here yet :(.\n\nHopefully a big fancy admin page to come :)');
+}
+
+/**
+ * Implements hook_permission().
+ */
+function ding_navigation_item_permission() {
+  return array(
+    'administer ding navigation box' => array(
+      'title' => t('Administer Ding navigation box'),
+      'description' => t('Allows users to configure the Ding navigation box.'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_extra_fields().
+ */
+function ding_navigation_item_field_extra_fields() {
+  $return = array();
+  $return['ding_navigation_item']['ding_navigation_item'] = array(
+    'form' => array(
+      'title' => array(
+        'label' => t('Title'),
+        'description' => t('The title of the navigation item.'),
+        'weight' => -15,
+      ),
+      'shorthand' => array(
+        'label' => t('Shorthand notation'),
+        'description' => t('Shortand notation of the title.'),
+        'weight' => -14,
+      ),
+      'position' => array(
+        'label' => t('Position'),
+        'description' => t('The position of the item in the navigation box.'),
+        'weight' => -13,
+      ),
+    ),
+  );
+  return $return;
+}
+
+/**
+ * Fetch a Ding navigation item from the database. 
+ *
+ * @param $dniid
+ *   Integer specifying the ding navigation item id.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   A fully-loaded $postit object or FALSE if it cannot be loaded.
+ */
+function ding_navigation_item_load($dniid = NULL, $reset = FALSE) {
+  $dniids = (isset($dniid) ? array($dniid) : array());
+  $ding_navigation_item = postit_load_multiple($pids, array(), $reset);
+  return $postit ? reset($postit) : FALSE;
+}
+
+/**
+ * The class used for Ding navigation items.
+ */
+class DingNavigationItem extends Entity {
+  
+  public function __construct($values = array()) {
+    parent::__construct($values, 'ding_navigation_item');
+  }
+  
+  /**
+   * Specifies the default label, which is picked up by label() by default.
+   */
+  protected function defaultLabel() {
+    return 'Navigation item ' . $this->position;
+  }
+
+  /**
+   * Specifies the default uri, which is picked up by uri() by default.
+   */
+  protected function defaultUri() {
+    return array('path' => 'admin/structure/ding-navigation-item/manage');
+  }  
+  
+}
+
+/**
+ * The controller class used for Ding navigation items.
+ */
+class DingNavigationItemController extends EntityAPIController {
+  
+  public function __construct($entityType) {
+    parent::__construct($entityType);
+  }
+  
+  /**
+   * Create a Ding navigation item
+   * 
+   * First setup the values that are the specific to the ding navigation item 
+   * schema, then go through the parent imlplementation.
+   */
+  public function create(array $values = array()) {
+    // Add values that are specific to our Postit
+    $values += array(
+      'dniid' => '',
+      'title' => '',
+      'shorthand' => '',
+      'position',
+      'is_new' => TRUE,
+    );
+    $ding_navigation_item = parent::create($values);
+    return $ding_navigation_item;    
+  }
+  
+  /**
+   * Override the buildContent function to setup fields that are specific to
+   * the ding navigation item.
+   */
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    // Let the parent class build it's field content first.
+    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
+    // We show our internal fields using a theming function from the FIELD
+    // API, so the behaviour will be the same as other fields added with the 
+    // FIELD API.
+    $content['title'] = array(
+      '#theme' => 'field',
+      '#weight' => -40,
+      '#title' => t('Title'),
+      '#label_display' => 'hidden',
+      '#access' => TRUE,
+      '#view_mode' => 'full',
+      '#language' => LANGUAGE_NONE,
+      '#field_name' => 'field_ding_navigation_item_title',
+      '#field_type' => 'text',
+      '#entity_type' => 'ding_navigation_item',
+      '#bundle' => 'ding_navigation_item',
+      '#items' => array(array('value' => $entity->title)),
+      '#formatter' => 'text_default',
+       0 => array('#markup' => check_plain($entity->title)),
+    );
+    return $content;
+  }
+  
+}
+
+
+

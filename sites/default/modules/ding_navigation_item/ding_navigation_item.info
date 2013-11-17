@@ -1,0 +1,8 @@
+name = Ding navigation item
+description = Provides an entity that models content in the Ding navigation box.
+core = 7.x
+package = Ding!
+
+files[] = ding_navigation_item.module
+
+dependencies[] = entity
