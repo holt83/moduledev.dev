@@ -25,12 +25,9 @@ function postit_schema() {
   return $schema;
 }
 
-<<<<<<< HEAD
+
 function postit_install() {
   $postit = entity_create('postit', array('type' => 'postit'));
   $postit->note = "A little create on install test postit.";
   postit_save($postit);
 }
-
-=======
->>>>>>> 010e944e40e93dbddfddc62b10385b1429790801
