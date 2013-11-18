@@ -19,6 +19,10 @@ function ding_navigation_item_entity_info() {
       'id' => 'dniid',
     ),
     'static cache' => TRUE,
+    // The Ding navigation item is a single bundle entity. This means that the
+    // bundle array, as defined below, could be omitted. We choose to include it
+    // anyway to take advantage of the FIELD API's 'Manage Fields' and 'Manage
+    // Display' admin pages.
     'bundles' => array(
       'ding_navigation_item' => array(
         'label' => t('Ding navigation item'), 
@@ -30,6 +34,7 @@ function ding_navigation_item_entity_info() {
     ),
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
+    'creation callback' => 'ding_navigation_item_create',
     'module' => 'ding_navigation_item',
   );
   return $entity_info;
@@ -42,12 +47,21 @@ function ding_navigation_item_menu() {
   $items['admin/structure/ding-navigation-box/manage'] = array(
     'title' => 'Navigation Box Admin',
     'description' => t('Manage the Ding Navigation Box and it\'s content.'),
-    'page callback' => 'ding_navigation_box_page_manage',
+    'page callback' => 'ding_navigation_box_page_info',
     'access arguments' => array('administer ding navigation box'),
   );
+  $items['admin/structure/ding-navigation-box/manage/navigation-box'] = array(
+    'title' => 'Navigation box',
+    'description' => t('On this page you can configure the Ding navigation box and its contents.'),
+    'page callback' => 'ding_navigation_box_page_manage',
+    'access arguments' => array('administer ding navigation box'),
+    'type' => MENU_LOCAL_TASK,
+  );
   $items['ding-navigation-item/%ding_navigation_item/edit'] = array(
-    'page callback' => 'ding_navigation_item_page_edit',
-    'page arguments' => array(1),
+    'title' => 'Edit Ding navigation item',
+    'description' => t('Edit the chosen Ding navigation item'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ding_navigation_item_form', 1),
     'access arguments' => array('administer ding navigation box'),
     'type' => MENU_CALLBACK,
   );
@@ -57,8 +71,43 @@ function ding_navigation_item_menu() {
 /**
  * Menu callback: admin/structure/ding-navigation-box/manage
  */
+function ding_navigation_box_page_info() {
+  return t('Welcome to the administrative pages for the Ding navigation box.');
+}
+
+/**
+ * Form builder: Form for editing a Ding navigation item.
+ */
+function ding_navigation_item_form($form, &$form_state, $ding_navigation_item) {
+  
+}
+
 function ding_navigation_box_page_manage() {
-  return t('Not much here yet :(.\n\nHopefully a big fancy admin page to come :)');
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'ding_navigation_item');
+  $result = $query->execute();
+  $dniids = array_keys($result['ding_navigation_item']);
+  $ding_navigation_items = ding_navigation_item_load_multiple($dniids);
+  $items = array();
+  foreach ($ding_navigation_items as $ding_navigation_item) {
+    $render_array = array(
+      'text' => array(
+        '#prefix' => '<p>',
+        '#suffix' => '</p>',
+        '#markup' => $ding_navigation_item->title,
+      ),
+      'edit_link' => array(
+        '#theme' => 'link',
+        '#text' => 'edit',
+        '#path' => "ding-navigation-item/$ding_navigation_item->dniid/edit",
+        '#options' => array('attributes' => array(), 'html' => FALSE),
+      ),      
+    );
+    $items[] = array(
+      'data' => drupal_render($render_array),
+    );
+  }
+  return theme('item_list', array('items' => $items));
 }
 
 /**
@@ -78,25 +127,27 @@ function ding_navigation_item_permission() {
  * Implements hook_field_extra_fields().
  */
 function ding_navigation_item_field_extra_fields() {
+  $extra_fields = array(
+    'title' => array(
+      'label' => t('Title'),
+      'description' => t('The title of the navigation item.'),
+      'weight' => -15,
+    ),
+    'shorthand' => array(
+      'label' => t('Shorthand notation'),
+      'description' => t('Shortand notation of the title.'),
+      'weight' => -14,
+    ),
+    'position' => array(
+      'label' => t('Position'),
+      'description' => t('The position of the item in the navigation box.'),
+      'weight' => -13,
+    ),    
+  );
   $return = array();
   $return['ding_navigation_item']['ding_navigation_item'] = array(
-    'form' => array(
-      'title' => array(
-        'label' => t('Title'),
-        'description' => t('The title of the navigation item.'),
-        'weight' => -15,
-      ),
-      'shorthand' => array(
-        'label' => t('Shorthand notation'),
-        'description' => t('Shortand notation of the title.'),
-        'weight' => -14,
-      ),
-      'position' => array(
-        'label' => t('Position'),
-        'description' => t('The position of the item in the navigation box.'),
-        'weight' => -13,
-      ),
-    ),
+    'form' => $extra_fields,
+    'display' => $extra_fields,
   );
   return $return;
 }
@@ -113,8 +164,58 @@ function ding_navigation_item_field_extra_fields() {
  */
 function ding_navigation_item_load($dniid = NULL, $reset = FALSE) {
   $dniids = (isset($dniid) ? array($dniid) : array());
-  $ding_navigation_item = postit_load_multiple($pids, array(), $reset);
-  return $postit ? reset($postit) : FALSE;
+  $ding_navigation_item = ding_navigation_item_load_multiple($dniids, array(), $reset);
+  return $ding_navigation_item ? reset($ding_navigation_item) : FALSE;
+}
+
+/**
+ * Fetch mulitple Ding naviation items from the database
+ * 
+ * @param $dniids
+ *   An array of Ding navigation item ids. 
+ * @param $conditions
+ *   An array of conditions to match against
+ * @param $reset
+ *   A boolean indicating if the internal cache should be reset.
+ * @return
+ *   An array of Ding navigation items keyd by the primary key dniid.
+ */
+function ding_navigation_item_load_multiple($dniids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('ding_navigation_item', $dniids, $conditions, $reset);
+}
+
+/**
+ * Delete a Ding navigation item from the database.
+ */
+function ding_navigation_item_delete(DingNavigationItem $ding_navigation_item) {
+  $ding_navigation_item->delete();
+}
+
+/**
+ * Delete multiple Ding naviation items.
+ * 
+ * @param $dniids
+ *   An array of Ding navigation item IDs to match against.
+ */
+function ding_navigation_item_delete_multiple($dniids = array()) {
+  entity_get_controller('ding_navigation_item')->delete($dniids);
+}
+
+/**
+ * Create and return a Ding navigation item.
+ */
+function ding_navigation_item_create($values = array()) {
+  return entity_get_controller('ding_navigation_item')->create($values);
+}
+
+/**
+ * Saves a Ding navigation item to the database.
+ * 
+ * @param $ding_navigation_item
+ *   The Ding navigation item to be saved.
+ */
+function ding_navigation_item_save(DingNavigationItem $ding_navigation_item) {
+  return entity_get_controller('ding_navigation_item')->save($ding_navigation_item);
 }
 
 /**
@@ -163,7 +264,7 @@ class DingNavigationItemController extends EntityAPIController {
       'dniid' => '',
       'title' => '',
       'shorthand' => '',
-      'position',
+      'position' => 0,
       'is_new' => TRUE,
     );
     $ding_navigation_item = parent::create($values);

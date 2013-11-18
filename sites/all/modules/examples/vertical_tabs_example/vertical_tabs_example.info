@@ -1,0 +1,11 @@
+name = Vertical tabs example
+description = Show how to use vertical tabs for enhancing user experience.
+package = Example modules
+core = 7.x
+
+; Information added by  packaging script on 2013-11-04
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "examples"
+datestamp = "1383601761"
+

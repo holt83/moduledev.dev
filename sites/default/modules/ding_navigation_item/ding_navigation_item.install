@@ -11,7 +11,7 @@ function ding_navigation_item_schema() {
         'description' => 'Primary key for a ding navigation item.',
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not null' => TRUE,
+        'not null' => TRUE,  
       ),
       'title' => array(
         'description' => 'The full title of the ding navigation item',
@@ -34,6 +34,24 @@ function ding_navigation_item_schema() {
         'default' => 0,
       ),
     ),
+    'primary key' => array('dniid'),
+    'unique keys' => array(
+      'position' => array('position'),
+    ),
   );
   return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function ding_navigation_item_install() {
+  // Create the 5 navigation items to show in the navigation box.
+  for ($i=1; $i < 6; $i++) { 
+    $ding_navigation_item = entity_create('ding_navigation_item', array('type' => 'ding_navigation_item'));
+    $ding_navigation_item->title = 'Ding navigation item ' . $i;
+    $ding_navigation_item->shorthand = 'Nav item ' . $i;
+    $ding_navigation_item->position = $i;
+    ding_navigation_item_save($ding_navigation_item);
+  }
 }
