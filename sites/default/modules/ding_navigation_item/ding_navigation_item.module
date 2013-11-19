@@ -20,9 +20,9 @@ function ding_navigation_item_entity_info() {
     ),
     'static cache' => TRUE,
     // The Ding navigation item is a single bundle entity. This means that the
-    // bundle array, as defined below, could be omitted. We choose to include it
-    // anyway to take advantage of the FIELD API's 'Manage Fields' and 'Manage
-    // Display' admin pages.
+    // bundles array, as defined below, could be omitted. We choose to include 
+    // it here anyway to take advantage of the FIELD API's 'Manage Fields' and 
+    // 'Manage Display' admin pages.
     'bundles' => array(
       'ding_navigation_item' => array(
         'label' => t('Ding navigation item'), 
@@ -51,17 +51,17 @@ function ding_navigation_item_menu() {
     'access arguments' => array('administer ding navigation box'),
   );
   $items['admin/structure/ding-navigation-box/manage/navigation-box'] = array(
-    'title' => 'Navigation box',
+    'title' => 'Navigation Box',
     'description' => t('On this page you can configure the Ding navigation box and its contents.'),
     'page callback' => 'ding_navigation_box_page_manage',
     'access arguments' => array('administer ding navigation box'),
     'type' => MENU_LOCAL_TASK,
   );
-  $items['ding-navigation-item/%ding_navigation_item/edit'] = array(
-    'title' => 'Edit Ding navigation item',
+  $items['admin/structure/ding-navigation-box/manage/%ding_navigation_item'] = array(
+    'title' => 'Edit Navigation Item',
     'description' => t('Edit the chosen Ding navigation item'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ding_navigation_item_form', 1),
+    'page arguments' => array('ding_navigation_item_form', 4),
     'access arguments' => array('administer ding navigation box'),
     'type' => MENU_CALLBACK,
   );
@@ -79,7 +79,31 @@ function ding_navigation_box_page_info() {
  * Form builder: Form for editing a Ding navigation item.
  */
 function ding_navigation_item_form($form, &$form_state, $ding_navigation_item) {
-  
+  if (!isset($form_state['ding_navigation_item'])) {
+    $form_state['ding_navigation_item'] = $ding_navigation_item;
+  }
+  $ding_navigation_item = $form_state['ding_navigation_item'];
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#default_value' => $ding_navigation_item->title,
+    '#description' => t('The full title of the navigation item.'),
+    '#weight' => -15,
+    '#required' => TRUE,
+  );
+  // Let the Field API attach fields assigned to the ding navigation item entity
+  field_attach_form('ding_navigation_item', $ding_navigation_item, $form, $form_state);
+  // Continue the breadcrumb trail from the previous admin pages, to integrate
+  // the editing of ding navigation items more with the rest of Ding navigation
+  // box admin UI.
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Structure', 'admin/structure');
+  $breadcrumb[] = l('Navigation Box Admin', 'admin/structure/ding-navigation-box/manage/navigation-box');
+  $breadcrumb[] = l('Edit Navigation Item', 'admin/structure/ding-navigation-box/manage/' . $ding_navigation_item->dniid);
+  drupal_set_breadcrumb($breadcrumb);
+  return $form;
 }
 
 function ding_navigation_box_page_manage() {
@@ -99,7 +123,7 @@ function ding_navigation_box_page_manage() {
       'edit_link' => array(
         '#theme' => 'link',
         '#text' => 'edit',
-        '#path' => "ding-navigation-item/$ding_navigation_item->dniid/edit",
+        '#path' => "admin/structure/ding-navigation-box/manage/$ding_navigation_item->dniid",
         '#options' => array('attributes' => array(), 'html' => FALSE),
       ),      
     );
@@ -108,6 +132,13 @@ function ding_navigation_box_page_manage() {
     );
   }
   return theme('item_list', array('items' => $items));
+}
+
+/**
+ * Implements hook_menu_breadcrumb_alter().
+ */
+function ding_navigation_item_menu_breadcrumb_alter(&$active_trail, $item) {
+  file_put_contents("/home/drupalpro/debug/debug.txt", print_r($active_trail , TRUE), FILE_APPEND);
 }
 
 /**
