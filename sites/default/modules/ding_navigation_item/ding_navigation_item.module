@@ -90,6 +90,31 @@ function ding_navigation_item_form($form, &$form_state, $ding_navigation_item) {
     '#description' => t('The full title of the navigation item.'),
     '#weight' => -15,
     '#required' => TRUE,
+    '#maxlength' => 24,
+    '#size' => 40,
+  );
+  $form['shorthand'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title abbrevation'),
+    '#default_value' => $ding_navigation_item->shorthand,
+    '#description' => t('An abbrevation of the title to display on small screens.'),
+    '#weight' => -14,
+    '#required' => TRUE,
+    '#maxlength' => 12,
+    '#size' => 20,
+  );
+  $form['buttons'] = array();
+  $form['buttons']['#weight'] = 100;
+  $form['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 5,
+    '#submit' => array('ding_navigation_item_form_submit'),
+  );
+  $form['buttons']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel'),
+    '#submit' => array('ding_navigation_item_form_cancel'),
   );
   // Let the Field API attach fields assigned to the ding navigation item entity
   field_attach_form('ding_navigation_item', $ding_navigation_item, $form, $form_state);
@@ -105,6 +130,19 @@ function ding_navigation_item_form($form, &$form_state, $ding_navigation_item) {
                     'admin/structure/ding-navigation-box/manage/' . $ding_navigation_item->dniid);
   drupal_set_breadcrumb($breadcrumb);
   return $form;
+}
+
+function ding_navigation_item_form_submit($form, &$form_state) {
+  $ding_navigation_item = $form_state['ding_navigation_item'];
+  $ding_navigation_item->title = $form_state['values']['title'];
+  $ding_navigation_item->shorthand = $form_state['values']['shorthand'];
+  // Save and go back.
+  $ding_navigation_item->save();
+  $form_state['redirect'] = 'admin/structure/ding-navigation-box/manage/navigation-box';
+}
+
+function ding_navigation_item_form_cancel($form, &$form_state) {
+  $form_state['redirect'] = 'admin/structure/ding-navigation-box/manage/navigation-box'; 
 }
 
 function ding_navigation_box_page_manage() {
@@ -285,7 +323,7 @@ class DingNavigationItemController extends EntityAPIController {
    * schema, then go through the parent imlplementation.
    */
   public function create(array $values = array()) {
-    // Add values that are specific to our Postit
+    // Add values that are specific to the Ding navigation item.
     $values += array(
       'dniid' => '',
       'title' => '',
