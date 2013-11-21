@@ -97,11 +97,12 @@ function ding_navigation_item_form($form, &$form_state, $ding_navigation_item) {
   // the editing of ding navigation items more with the rest of Ding navigation
   // box admin UI.
   $breadcrumb = array();
-  $breadcrumb[] = l('Home', '<front>');
-  $breadcrumb[] = l('Administration', 'admin');
-  $breadcrumb[] = l('Structure', 'admin/structure');
-  $breadcrumb[] = l('Navigation Box Admin', 'admin/structure/ding-navigation-box/manage/navigation-box');
-  $breadcrumb[] = l('Edit Navigation Item', 'admin/structure/ding-navigation-box/manage/' . $ding_navigation_item->dniid);
+  $breadcrumb[] = l(t('Home'), '<front>');
+  $breadcrumb[] = l(t('Administration'), 'admin');
+  $breadcrumb[] = l(t('Structure'), 'admin/structure');
+  $breadcrumb[] = l(t('Navigation Box Admin'), 'admin/structure/ding-navigation-box/manage/navigation-box');
+  $breadcrumb[] = l(t('Edit @title', array('@title' => $ding_navigation_item->title)), 
+                    'admin/structure/ding-navigation-box/manage/' . $ding_navigation_item->dniid);
   drupal_set_breadcrumb($breadcrumb);
   return $form;
 }
@@ -134,12 +135,6 @@ function ding_navigation_box_page_manage() {
   return theme('item_list', array('items' => $items));
 }
 
-/**
- * Implements hook_menu_breadcrumb_alter().
- */
-function ding_navigation_item_menu_breadcrumb_alter(&$active_trail, $item) {
-  file_put_contents("/home/drupalpro/debug/debug.txt", print_r($active_trail , TRUE), FILE_APPEND);
-}
 
 /**
  * Implements hook_permission().
