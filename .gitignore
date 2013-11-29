@@ -7,4 +7,5 @@ sites/*/private
 
 # Ignore nested repositories
 sites/default/modules/ding_navigation_box
+sites/all/modules/migrate_ding1_ding2
 
