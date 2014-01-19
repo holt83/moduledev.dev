@@ -27,7 +27,7 @@
    if (!isset($experiment_nr)) {
      return '<h3>Please enter an experiment number in the URL (/database-fun/%experiment_nr).</h3>';
    }
-   if (!in_array($experiment_nr, array(1, 2 ,3, 4, 5))) {
+   if (!in_array($experiment_nr, range(1, 9))) {
      return '<h3>There\'s no experiments going on here ;)</h3>'; 
    }
    $experiment_func = "_run_experiment_$experiment_nr";
@@ -285,6 +285,129 @@ function _run_experiment_5() {
   return _setup_experiment_render_array('Experiment 5', $list_title, 'ol', $items);
 }
 
+/**
+ * Experiment 6
+ *
+ * Dynamic update query.  
+ */
+function _run_experiment_6() {
+  // Setup the update query.
+  $changed_count = db_update('database_fun_persons')
+    ->condition('name', 'Simon Holt')
+    ->fields(array('phone' => '666-1337'))
+    ->execute();
+  // Return render array to display number of changed records.
+  return array(
+    '#prefix' => '<h2>',
+    '#suffix' => '</h2>',
+    '#markup' => t('Number of changed records: @changed_count', array(
+      '@changed_count' => $changed_count,
+    )),
+  );
+}
+
+/**
+ * Experiment 7.
+ *
+ * Dynamic delete query.
+ */
+function _run_experiment_7() {
+  // Build delete query.
+  $delete_count = db_delete('database_fun_persons')
+    ->condition('name', 'Harpo')
+    ->execute();
+  // Setup render array to display number of records deleted.
+  return array(
+    '#prefix' => '<h2>',
+    '#suffix' => '</h2>',
+    '#markup' => t('Number of deleted records: @delete_count', array(
+      '@delete_count' => $delete_count,
+    )),
+  );
+}
+
+/**
+ * Experiment 8.
+ *
+ * Dynamic merge query.
+ */
+function _run_experiment_8() {
+  // Build merge query.
+  // If there's a person record with the name 'Kelly':
+  //  - Update the phone number to '666-1337'.
+  // If there's no record with the name 'Kelly':
+  //  - Insert a 'Kelly' record with the specified address and phone number.
+  $result = db_merge('database_fun_persons')
+    ->key(array('name' => 'Kelly'))
+    ->insertFields(array(
+      'name' => 'Kelly',
+      'address' => 'Lortvej 13',
+      'phone' => '132-1245',
+    ))
+    ->updateFields(array(
+      'phone' => '666-1337',
+    ))
+    ->execute();
+  // Return the result of the merge query.
+  return array(
+    '#prefix' => '<h2>',
+    '#suffix' => '</h2>',
+    '#markup' => t('Result of merge query: @result', array(
+      '@result' => $result,
+    )),
+  );
+}
+
+/**
+ * Experiment 9.
+ *
+ * Transaction.
+ */
+function _run_experiment_9() {
+  // Create the transaction.
+  $transaction = db_transaction();
+  // Use a try clause so we can rollback the transaction if there was an error.
+  try {
+    // Our transaction consists of a simple update query followed by an insert
+    // query. We save the change count and generated id from the update query
+    // and insert query respectively.
+    $changed_count = db_update('database_fun_persons')
+      ->condition('name', 'Simon Holt')
+      ->fields(array('phone' => '666-1234'))
+      ->execute();    
+    $id = db_insert('database_fun_persons')
+      ->fields(array(
+        'name' => 'Smukke Henriette',
+        'address' => 'Markedgade 24',
+        'phone' => '1337',
+      ))
+      ->execute(); 
+  } 
+  catch (Exception $e) {
+    // If something goes wrong we rollback the transaction and send a watchdog
+    // exception message.
+    $transaction->rollback();
+    watchdog_exception('database_fun', $e);
+    // Notify the user that something went wrong.
+    return array(
+      '#type' => 'html_tag',
+      '#tag' => 'p',
+      '#value' => t('There was en error during the transaction.'),
+    );
+  }
+  // We dont need to close our transaction object. PHP will automatically 
+  // destroy the connection when the funciton ends.
+  // Below we send a render array to display the results of the queries.
+  return array(
+    '#prefix' => '<h2>',
+    '#suffix' => '</h2>',
+    '#markup' => t('Result of update query: @changed_count<br>Result of insert query: @id', array(
+      '@changed_count' => $changed_count,
+      '@id' => $id,
+    )),
+  );
+}
+
 function _setup_experiment_render_array($title, $list_title, $type, $items) {
   $render_array = array();
   $render_array['experiment_title'] = array(
@@ -292,13 +415,13 @@ function _setup_experiment_render_array($title, $list_title, $type, $items) {
     '#suffix' => '</h2>',
     '#markup' => $title,
   );
-  $variables = array(
+  $options = array(
     'title' => $list_title,
     'type' => $type,
     'items' => $items,
   );
   $render_array['experiment_result'] = array(
-    '#markup' => theme('item_list', $variables),
+    '#markup' => theme('item_list', $options),
   ); 
   return $render_array;
 }

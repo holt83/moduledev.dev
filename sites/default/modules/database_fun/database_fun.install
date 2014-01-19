@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @file 
+ * @file
  * 
  * Install file for the Database fun module.
  * 
- * Sets up a persom test table for insert queries.
+ * Sets up a Person test table to experiment on.
  */
-
+  
 function database_fun_schema() {
   $schema['database_fun_persons'] = array(
     'description' => 'Person test table for Database Fun experiments',
@@ -15,31 +15,32 @@ function database_fun_schema() {
       'pid' => array(
         'type' => 'serial',
         'not null' => TRUE,
-        'description' => 'Primary ID: Unique ID for the person',
+        'description' => 'Primary key: Unique person ID.',
       ),
       'name' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-        'description' => 'Test person name',
         'default' => '',
+        'description' => 'Name of the person',
       ),
       'address' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
-        'description' => 'Test person address',
         'default' => '',
+        'description' => 'The person\'s address',
       ),
       'phone' => array(
         'type' => 'varchar',
         'length' => 25,
         'not null' => TRUE,
-        'description' => 'Test person phone',
         'default' => '',
+        'description' => 'The person\'s phone number',
       ),
     ),
     'primary key' => array('pid'),
   );
   return $schema;
 }
+
