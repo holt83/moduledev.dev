@@ -8,7 +8,7 @@
 /**
  * Implements hook_field_info().
  */
-function dimfield_field_info() {
+function dimfield_field_info() {  
   return array(
     'dimensions' => array(
       'label' => t('Dimensions'),
@@ -361,7 +361,7 @@ function dimfield_field_formatter_info() {
     'dimfield_table' => array(
       'label' => t('Show as table'),
       'field types' => array('dimensions'),
-      'settings' => array('units_as' => 'column'),  
+      'settings' => array('units_as' => 'column'),    
     ),  
   );
 }
