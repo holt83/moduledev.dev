@@ -112,7 +112,7 @@ function javascript_fun_link_response($type = 'ajax') {
   if ($type == 'ajax') {
     $output = t('Hello World');
     $commands = array();
-    $commands[] = ajax_command_append('#saying-hello', $output);
+    $commands[] = ajax_command_append('#saying-hello', $output);  
     $page = array(
       '#type' => 'ajax',
       '#commands' => $commands,  

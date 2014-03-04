@@ -1,0 +1,8 @@
+name = Views fun
+description = Gives various examples of creating Views add-ons.
+core = 7.x
+package = Drupal 7 development
+
+files[] = views_fun.module
+
+dependencies[] = views
