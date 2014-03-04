@@ -5,9 +5,5 @@ sites/*/settings*.php
 sites/*/files
 sites/*/private
 sites/default/modules/ding_navigation_box
-<<<<<<< HEAD
 sites/default/modules/ting_search_context
 sites/all/modules/migrate_ding1_ding2
-
-=======
->>>>>>> fba860df724d9c209fb2d972d796141d419bca7d
