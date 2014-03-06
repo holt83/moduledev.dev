@@ -4,5 +4,6 @@ core = 7.x
 package = Drupal 7 development
 
 files[] = views_fun.module
+files[] = views_fun.install
 
 dependencies[] = views
