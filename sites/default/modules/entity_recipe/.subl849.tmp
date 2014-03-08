@@ -129,7 +129,6 @@ function entity_recipe_install_vocabularies() {
  */
 function entity_recipe_update_7200(&$sandbox) {
 	if ($machine_name = entity_recipe_install_vocabularies()) {
-		throw new DrupalUpdateException('Error occured when attempting create 
-			vocabulary: ' . $machine_name);
+		
 	}
 }

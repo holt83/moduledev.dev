@@ -129,6 +129,8 @@ function entity_recipe_drush_command() {
  */
 function entity_recipe_drush_help($section) {
   switch ($section) {
+    case 'drush:dump-entity-info':
+      return dt('Type drush dump-entity-info (or dei) followed by an entity type, to show info about that type');
     // The 'title' meta item is used to name a group of
     // commands in `drush help`.  If a title is not defined,
     // the default is "All commands in ___", with the
@@ -139,12 +141,12 @@ function entity_recipe_drush_help($section) {
     // to not define a title unless the file defines a lot
     // of commands.
     case 'meta:entity_recipe:title':
-      return dt('Programming Drupal Entities commands');
+      return dt('Entity recipe module commands');
     // The 'summary' meta item is displayed in `drush help --filter`,
     // and is used to give a general idea what the commands in this
     // command file do, and what they have in common.      
     case 'meta:entity_recipe:summary':
-      return dt('Commands for demonstrating examples found in Programming Drupal Entities.');
+      return dt('Use Drush to perform various entity operation with the entity API');
   }
 }
 
