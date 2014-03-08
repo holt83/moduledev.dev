@@ -6,4 +6,5 @@ sites/*/files
 sites/*/private
 sites/default/modules/ding_navigation_box
 sites/default/modules/ting_search_context
+sites/default/modules/embed_facebook
 sites/all/modules/migrate_ding1_ding2
