@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function pde_02_schema() {
+  $schema['ingredient'] = array(
+    'description' => 'Hypothetical ingredient table',
+    'fields' => array(
+      'iid' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Name of the ingredient',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      'iid',
+    ),
+    'unique keys' => array(
+      'name' => array('name'),
+    ),
+  );
+
+  $schema['recipe_ingredient'] = array(
+    'description' => 'Hypothetical table of recipe ingredients',
+    'fields' => array(
+      'riid' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'rid' => array(
+        'description' => 'Foreign key: recipe (imaginary for this example)',
+        'type' => 'int',
+        'size' => 'big',
+        'default' => 0,
+        'not null' => TRUE,
+      ),
+      'iid' => array(
+        'description' => 'Foreign key: ingredient',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'qty' => array(
+        'description' => 'Numerical quantity of units',
+        'type' => 'float',
+        'not null' => TRUE,
+      ),
+      'qty_unit' => array(
+        'description' => 'Name of units',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => "''",
+        'not null' => TRUE,
+      ),
+    ),
+    'foreign keys' => array(
+      'ingredient_on_recipe' => array(
+        'table' => 'ingredient'
+        'columns' => array('iid' => 'iid'),
+      ),  
+    ),
+    'primary key' => array(
+      'riid',
+    ),
+  );
+
+  return $schema;
+}

@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function pde_02_entity_info() {
+  $info = array();
+  $info['ingredient'] = array(
+    'label' => t('Ingredient'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'ingredient',
+    'entity keys' => array(
+      'id' => 'iid',
+      'label' => 'name',
+    ),
+    'fieldable' => FALSE,
+  );
+  $info['recipe_ingredient'] = array(
+    'label' => t('Recipe Ingredient'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'recipe_ingredient',
+    'label callback' => 'pde_02_ri_label',
+    'entity keys' => array(
+      'id' => 'riid',
+    ),
+    'fieldable' => FALSE,
+  );
+
+  return $info;
+}
+/**
+ * Implements hook_entity_property_info_alter().
+ */
+function pde_02_entity_property_info_alter(&$info) {
+  $properties = &$info['ingredient']['properties'];
+
+  $properties['name'] += array(
+    'setter callback' => 'entity_property_verbatim_set',
+  );
+
+  $properties = &$info['recipe_ingredient']['properties'];
+
+  foreach (array_keys($properties) as $key) {
+    if ($key == 'riid') {
+      continue;
+    }
+    $properties[$key] += array(
+      'setter callback' => 'entity_property_verbatim_set',
+    );
+  }
+
+  // Set the type to ingredient to enable chaining
+  $properties['iid']['type'] = 'ingredient';
+}
+
+/**
+ * Returns the label for the given entity.
+ *
+ * @param $entity
+ *   Entity.
+ * @param $entity_type
+ *   Entity type.
+ * @return string
+ *   Label of the given entity.
+ */
+function pde_02_ri_label($entity, $entity_type) {
+  // This always receives recipe_ingredient types so no need to check
+  // NOTE: This is called from within a wrapper so it's safer to implement
+  // it without using wrappers.
+  $ingredient = entity_load_single('ingredient', $entity->iid);
+  return $ingredient->label() . ' ' . $entity->qty . ' ' . $entity->qty_unit;
+}

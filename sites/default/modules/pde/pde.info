@@ -1,0 +1,7 @@
+name = Common Code
+description = Common code used for Programming Drupal Entities examples.
+package = " Programming Drupal Entities"
+files[] = pde.module
+dependencies[] = entity
+core = 7.x
+version = 7.x-1.0
