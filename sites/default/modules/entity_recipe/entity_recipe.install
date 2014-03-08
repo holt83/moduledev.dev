@@ -1,9 +1,24 @@
-<?php
+<?php 
+
+/**
+ * Install file for the Entity recipe module.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * Install default vocabularies.
+ */
+function entity_recipe_install() {
+	entity_recipe_install_vocabularies();
+}
 
 /**
  * Implements hook_schema().
+ *
+ * Defines our entities' base tables.
  */
-function pde_02_schema() {
+function entity_recipe_schema() {
   $schema['ingredient'] = array(
     'description' => 'Hypothetical ingredient table',
     'fields' => array(
@@ -65,7 +80,7 @@ function pde_02_schema() {
     ),
     'foreign keys' => array(
       'ingredient_on_recipe' => array(
-        'table' => 'ingredient'
+        'table' => 'ingredient',
         'columns' => array('iid' => 'iid'),
       ),  
     ),
@@ -75,4 +90,30 @@ function pde_02_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * Installs the default vocabularies needed by the module.
+ */
+function entity_recipe_install_vocabularies() {
+	$install_status = array();
+	$vocabularies = array(
+		array(
+			'name' => 'Cuisine'
+			'machine_name' => 'cuisine',
+			'description' => 'Contains terms representing different cuisines.',
+		),
+		array(
+			'name' => 'Difficulty',
+			'machine_name' => 'difficulty',
+			'description' => 'Contains terms representing difficulty levels.',
+		),
+	);
+	foreach ($vocabularies as $vocabulary) {
+		// We don't want to override existing vocabularies.
+		if (!taxonomy_vocabulary_machine_name_load($vocabulary['machine_name'])) {
+			// Use the taxonomy since we don't need a wrapper.
+			$install_status[] = taxonomy_vocabulary_save((object) $vocabulary);
+		}
+	}
 }

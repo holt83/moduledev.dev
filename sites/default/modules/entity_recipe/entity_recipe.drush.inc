@@ -15,7 +15,7 @@
  * @return
  *   An associative array describing your command(s).
  */
-function pde_drush_command() {
+function entity_recipe_drush_command() {
   $items = array();
 
   $defaults = array(
@@ -29,7 +29,6 @@ function pde_drush_command() {
       'type' => 'Entity type.',
     ),
     'aliases' => array('pe'),
-    'required-arguments' => 1,
   ) + $defaults;
 
   $items['dump-entity-info'] = array(
@@ -47,7 +46,6 @@ function pde_drush_command() {
       'entity' => 'Entity ID.',
     ),
     'aliases' => array('dep'),
-    'required-arguments' => 1,
   ) + $defaults;
 
   $items['print-table'] = array(
@@ -115,12 +113,37 @@ function pde_drush_command() {
 
 /**
  * Implementation of hook_drush_help().
+ *
+ * This function is called whenever a drush user calls
+ * 'drush help <name-of-your-command>'. This hook is optional. If a command
+ * does not implement this hook, the command's description is used instead.
+ *
+ * This hook is also used to look up help metadata, such as help
+ * category title and summary.  See the comments below for a description.
+ *
+ * @param
+ *   A string with the help section (prepend with 'drush:' or 'meta:')
+ *
+ * @return
+ *   A string with the help text for your command.
  */
-function pde_drush_help($section) {
+function entity_recipe_drush_help($section) {
   switch ($section) {
-    case 'meta:pde:title':
+    // The 'title' meta item is used to name a group of
+    // commands in `drush help`.  If a title is not defined,
+    // the default is "All commands in ___", with the
+    // specific name of the commandfile (e.g. sandwich).
+    // Command files with less than four commands will
+    // be placed in the "Other commands" section, _unless_
+    // they define a title.  It is therefore preferable
+    // to not define a title unless the file defines a lot
+    // of commands.
+    case 'meta:entity_recipe:title':
       return dt('Programming Drupal Entities commands');
-    case 'meta:pde:summary':
+    // The 'summary' meta item is displayed in `drush help --filter`,
+    // and is used to give a general idea what the commands in this
+    // command file do, and what they have in common.      
+    case 'meta:entity_recipe:summary':
       return dt('Commands for demonstrating examples found in Programming Drupal Entities.');
   }
 }
@@ -137,15 +160,15 @@ function pde_drush_help($section) {
  * @return
  *   Table output or, if unsucessful, returns FALSE.
  */
-function drush_pde_print_entity($entity, $type = NULL) {
+function drush_entity_recipe_print_entity($entity, $type = NULL) {
   // Convert anything we're given into a wrapper object
-  $wrapper = _pde_assert_wrapper($entity, $type);
+  $wrapper = _entity_recipe_assert_wrapper($entity, $type);
   if (!is_object($wrapper)) {
     // A non-object means a wrapper was not possible
     return $wrapper;
   }
 
-  $handle = _pde_handle();
+  $handle = _entity_recipe_handle();
 
   $header = ' Entity (' . $wrapper->type();
   $header .= ') - ID# '. $wrapper->getIdentifier().':';
@@ -177,7 +200,7 @@ function drush_pde_print_entity($entity, $type = NULL) {
  * @param $type
  *   Entity type.
  */
-function drush_pde_dump_entity_info($type) {
+function drush_entity_recipe_dump_entity_info($type) {
   $info = entity_get_info($type);
   drush_print_r($info);
 }
@@ -192,14 +215,14 @@ function drush_pde_dump_entity_info($type) {
  *   Entity ID. If not given the entity property information of
  *   the entity type will be printed instead.
  */
-function drush_pde_dump_entity_properties($type, $id = NULL) {
+function drush_entity_recipe_dump_entity_properties($type, $id = NULL) {
   if (!isset($id)) {
     $info = entity_get_property_info($type);
     drush_print_r($info);
   }
   else {
     // Convert anything we're given into a wrapper object
-    $wrapper = _pde_assert_wrapper($id, $type);
+    $wrapper = _entity_recipe_assert_wrapper($id, $type);
     if (!is_object($wrapper)) {
       // A non-object means a wrapper was not possible
       return $wrapper;
@@ -221,16 +244,16 @@ function drush_pde_dump_entity_properties($type, $id = NULL) {
  * @return
  *   EntityMetadataWrapper object or FALSE if it was not possible.
  */
-function _pde_assert_wrapper($object, $type = NULL) {
+function _entity_recipe_assert_wrapper($object, $type = NULL) {
   if (!is_object($object)) {
     if (!$type) {
-      return _pde_error(dt('An entity type must be given.'));
+      return _entity_recipe_error(dt('An entity type must be given.'));
     }
     return entity_metadata_wrapper($type, $object);
   }
   else if (!($object instanceof EntityMetadataWrapper)) {
     if (!($object instanceof Entity)) {
-      return _pde_error(dt('Unable to wrap object. Not an Entity.'));
+      return _entity_recipe_error(dt('Unable to wrap object. Not an Entity.'));
     }
     // Entity class has entityType method
     return entity_metadata_wrapper($object->entityType(), $object);
@@ -240,9 +263,9 @@ function _pde_assert_wrapper($object, $type = NULL) {
   }
 }
 
-function drush_pde_print_table($table, $key = NULL) {
+function drush_entity_recipe_print_table($table, $key = NULL) {
   $header = "Database Table - $table:";
-  $handle = _pde_handle();
+  $handle = _entity_recipe_handle();
 
   if (!($schema = drupal_get_schema($table))) {
     return FALSE;
@@ -253,7 +276,7 @@ function drush_pde_print_table($table, $key = NULL) {
   if (!isset($key)) {
     if (count($schema['primary key']) > 1) {
       // No support for multi-key tables
-      return _pde_error(dt('The "@table" table has a primary key with more than one field. Can not print it!', array('@table' => $table)));
+      return _entity_recipe_error(dt('The "@table" table has a primary key with more than one field. Can not print it!', array('@table' => $table)));
     }
     $key = $schema['primary key'][0];
   }
@@ -275,7 +298,7 @@ function drush_pde_print_table($table, $key = NULL) {
  * @return
  *   The created entity wrapped in an EntityMetadataWrapper.
  */
-function drush_pde_entity_create($type, $data) {
+function drush_entity_recipe_entity_create($type, $data) {
   if (!is_array($data)) {
     if (is_string($data)) {
       $data = drupal_json_decode($data);
@@ -290,17 +313,17 @@ function drush_pde_entity_create($type, $data) {
   $wrapper = entity_metadata_wrapper($type, $entity);
   $wrapper->save();
 
-  drush_pde_print_entity($wrapper);
+  drush_entity_recipe_print_entity($wrapper);
   return $wrapper;
 }
 
 /**
  * READ an entity and display its properties.
  */
-function drush_pde_entity_read($type, $id) {
+function drush_entity_recipe_entity_read($type, $id) {
   $wrapper = entity_metadata_wrapper($type, $id);
 
-  drush_pde_print_entity($wrapper);
+  drush_entity_recipe_print_entity($wrapper);
 }
 
 /**
@@ -315,7 +338,7 @@ function drush_pde_entity_read($type, $id) {
  * @param $pval
  *   New property value.
  */
-function drush_pde_entity_update($type, $id, $pname, $pval) {
+function drush_entity_recipe_entity_update($type, $id, $pname, $pval) {
   $wrapper = entity_metadata_wrapper($type, $id);
 
   $wrapper->$pname = $pval;
@@ -326,7 +349,7 @@ function drush_pde_entity_update($type, $id, $pname, $pval) {
   $entity = entity_load_unchanged($type, $id);
   $wrapper->set($entity);
 
-  drush_pde_print_entity($wrapper);
+  drush_entity_recipe_print_entity($wrapper);
 }
 
 /**
@@ -337,21 +360,21 @@ function drush_pde_entity_update($type, $id, $pname, $pval) {
  * @param $id
  *   Entity ID.
  */
-function drush_pde_entity_delete($type, $id) {
+function drush_entity_recipe_entity_delete($type, $id) {
   $wrapper = entity_metadata_wrapper($type, $id);
   $wrapper->delete();
 
-  _pde_print_entity_base_table($wrapper);
+  _entity_recipe_print_entity_base_table($wrapper);
 }
 
-function drush_pde_drush_pde_init() {
+function drush_entity_recipe_drush_entity_recipe_init() {
 
 }
 
 /**
  * Prints the contents of the given entity's base table.
  */
-function _pde_print_entity_base_table($entity) {
+function _entity_recipe_print_entity_base_table($entity) {
   if ($entity instanceof Entity) {
     $info = $entity->entityInfo();
   }
@@ -362,14 +385,14 @@ function _pde_print_entity_base_table($entity) {
     return FALSE;
   }
 
-  drush_pde_print_table($info['base table']);
+  drush_entity_recipe_print_table($info['base table']);
 }
 
 /**
- * Suppresses all normal output from pde commands.
- * @ingroup pde_helpers
+ * Suppresses all normal output from entity_recipe commands.
+ * @ingroup entity_recipe_helpers
  */
-function _pde_suppress_output($setting = FALSE) {
+function _entity_recipe_suppress_output($setting = FALSE) {
   static $suppress;
 
   if (!is_null($setting)) {
@@ -381,15 +404,15 @@ function _pde_suppress_output($setting = FALSE) {
 
 /**
  * Returns the correct handle to use in output calls.
- * @ingroup pde_helpers
+ * @ingroup entity_recipe_helpers
  */
-function _pde_handle() {
+function _entity_recipe_handle() {
   static $handle = NULL;
 
-  if (($suppress = _pde_suppress_output()) && is_null($handle)) {
+  if (($suppress = _entity_recipe_suppress_output()) && is_null($handle)) {
     if ($handle = fopen('/dev/null', 'w')) {
       // Make sure we clean up
-      register_shutdown_function('_pde_handle_close');
+      register_shutdown_function('_entity_recipe_handle_close');
     }
   }
 
@@ -398,16 +421,16 @@ function _pde_handle() {
 
 /**
  * Close the output handle we have used.
- * @ingroup pde_helpers
+ * @ingroup entity_recipe_helpers
  */
-function _pde_handle_close() {
-  $handle = _pde_handle();
+function _entity_recipe_handle_close() {
+  $handle = _entity_recipe_handle();
   fclose($handle);
 }
 
 /**
- * @ingroup pde_helpers
+ * @ingroup entity_recipe_helpers
  */
-function _pde_error($msg) {
+function _entity_recipe_error($msg) {
   return drush_set_error(DRUSH_FRAMEWORK_ERROR, $msg);
 }

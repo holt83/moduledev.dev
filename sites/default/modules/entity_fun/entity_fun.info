@@ -1,0 +1,7 @@
+name = Entity fun
+description = Some fun with some entities :) I love 'em!
+package = " Programming Drupal Entities"
+files[] = entity_fun.module
+dependencies[] = entity
+core = 7.x
+version = 7.x-1.0

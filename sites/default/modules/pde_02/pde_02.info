@@ -1,9 +1,0 @@
-name = Chapter 2
-description = Contains example code demonstrating topics covered in Chapter 2.
-package = " Programming Drupal Entities"
-core = 7.x
-files[] = pde.module
-files[] = pde.install
-dependencies[] = entity
-dependencies[] = pde
-version = 7.x-1.0
