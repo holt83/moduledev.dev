@@ -113,12 +113,14 @@ function entity_recipe_install_vocabularies() {
 		),
 	);
 	foreach ($vocabularies as $vocabulary) {
-		// We don't want to override existing vocabularies.
+		// We don't want to override existing vocabularies
 		$conflict = taxonomy_vocabulary_machine_name_load($vocabulary['machine_name']);
-		// If no conflict was found: Add the vocabulary
-		if (!$conflict && taxonomy_vocabulary_save((object) $vocabulary) === FALSE) {
-			// Send the machine_name of the vocabulary that caused the problem.
-			return $vocabulary['machine_name'];
+		if (!$conflict) {
+			// Create and check for error
+			if (taxonomy_vocabulary_save((object) $vocabulary) === FALSE) {
+				// Send the machine_name of the vocabulary that caused the problem
+				return $vocabulary['machine_name'];
+			}
 		}
 	}
 	return FALSE;
