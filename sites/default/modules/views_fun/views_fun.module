@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Module file for the Views fun example module.
+ */
+
+/**
+ * Implements hook_views_api().
+ *
+ * Advertise our module to the views API, so our includes will be loaded.
+ */
+function views_fun_views_api() {
+	return array(
+		// The version of views API we're using.
+		'api' => 3,
+		// An optional views directory.
+		'path' => drupal_get_path('module', 'views_fun') . '/views',
+		// An optional path for views related templates.
+		'template path' => drupal_get_path('module', 'views_fun') . '/views/templates',
+	);
+}

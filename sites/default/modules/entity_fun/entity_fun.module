@@ -1,0 +1,117 @@
+<?php
+
+/**
+ * @file
+ * Contains entity code experiments.
+ */
+
+/**
+ * Implements hook_init().
+ */
+function entity_fun_init() {
+	static $called = FALSE;
+	if (!$called) {
+		// Some fun the file entity, which is a single-bundle-non-fieldable entity.
+		$file_entity_wrapper_1 = _entity_fun_save_file_with_entity_api();
+		$result = _entity_fun_save_file_with_file_api();
+		// Some fun with vocabulary entities:
+		$vocabulary_wrapper = _entity_fun_create_vocabulary('Entity test vocabulary', 
+			'entity_test_vocabulary');
+
+		$machine_name = 'cuisine';
+		$path = drupal_get_path('module', 'entity_recipe') . '/includes/terms_' . $machine_name . '.txt';
+		$lines = file($path, FILE_SKIP_EMPTY_LINES);
+		$terms = array();
+		$line_depth = 0;
+		while ($line = current($lines)) {
+			$line = trim($line);
+			$last_line_depth = $line_depth;
+			$is_child = strpos($line, '>');
+			if ($is_child) {
+				list($line_depth, $term_name) = explode(">", $line);
+				$line_depth = (int) strlen($line_depth);
+			}
+			else {
+				$line_depth = 0;
+				$term_name = $line;
+			}
+			$depth += ($line_depth - $last_line_depth);
+			$indent = '';
+			for ($i = 0; $i < $depth; $i++) {
+				$indent .= '  ';
+			}
+			$term = $term_name . ' (depth: ' . $depth . ')';
+			$terms[] = $indent . $term;
+			next($lines);				
+		}
+		file_put_contents("/home/drupalpro/debug/debug.txt", print_r($terms , TRUE), FILE_APPEND);
+	}
+}
+
+/**
+ * Saves a file (FILE_EXISTS_REPLACE) entity using the entity API. 
+ */
+function _entity_fun_save_file_with_entity_api() {
+	global $user;
+
+	$uri = 'public://helloworld.txt';
+	$content = "Hello world!\nI am programming Drupal 7 entities.";
+
+	$uri = file_unmanaged_save_data($content, $uri, FILE_EXISTS_REPLACE);
+	// Setup the values data array expected by entity_create.
+	$data = array(
+		'fid' => NULL,
+		'uri' => $uri,
+		'filename' => drupal_basename($uri),
+		'filemime' => file_get_mimetype($uri),
+		'uid' => $user->uid,
+		// If this is not set, the file will be removed on a cron job (6 hours).
+		'status' => FILE_STATUS_PERMANENT,
+	);
+	$entity = entity_create('file', $data);
+	// We could use $enity->save() here if we dont need the wrapper.
+	$wrapper = entity_metadata_wrapper('file', $entity);
+
+	return $wrapper->save();
+}
+
+/**
+ * Saves a file (FILE_EXISTS_REPLACE) entity using the file API. 
+ */
+function _entity_fun_save_file_with_file_api() {
+	$uri = 'public://helloworld_temp.txt';
+	$content = "Hello world!\nI am programming Drupal 7 entities.";
+	$file = file_save_data($content, $uri, FILE_EXISTS_REPLACE);
+	// We can get a wrapper with much less code than with the entity API.
+	$wrapper = entity_metadata_wrapper('file', $file);
+	$wrapper->value()->status = FILE_STATUS_PERMANENT;
+	$wrapper->save();
+	// $wrapper->delete() will delete entity and also file if type is file.
+
+	// Alternatively we could also load the entity:
+	$entity = entity_load_unchanged('file', $wrapper->getIdentifier());
+	$entity->status = FILE_STATUS_PERMANENT;
+	return entity_save('file', $entity);
+}
+
+/**
+ * Creates a vocabulary with the entity API.
+ */
+function _entity_fun_create_vocabulary($name, $machine_name) {
+	// Only create the vocabulary if it doesn't exists allready.
+	if (!taxonomy_vocabulary_machine_name_load($machine_name)) {
+		$data = array(
+			'name' => $name,
+			'machine_name' => $machine_name,
+			'description' => 'A vocabulary created with the entity API.',
+		);
+		$entity = entity_create('taxonomy_vocabulary', $data);
+		$wrapper = entity_metadata_wrapper('taxonomy_vocabulary', $entity);
+		$wrapper->save();
+		// Above we use a wrapper. If we don't need it, it's easier to use the
+		// taxonomy API: 
+		// $status = taxonomy_vocanulary_save((object) $data);
+		return $wrapper;
+	}
+	return FALSE;
+}

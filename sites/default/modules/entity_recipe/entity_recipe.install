@@ -1,0 +1,222 @@
+<?php 
+
+/**
+ * Install file for the Entity recipe module.
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * Install default vocabularies.
+ */
+function entity_recipe_install() {
+	entity_recipe_install_vocabularies(); // No need to handle errors here???
+	entity_recipe_install_terms();
+}
+
+/**
+ * Implements hook_schema().
+ *
+ * Defines our entity base tables.
+ */
+function entity_recipe_schema() {
+  $schema['ingredient'] = array(
+    'description' => 'Hypothetical ingredient table',
+    'fields' => array(
+      'iid' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Name of the ingredient',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      'iid',
+    ),
+    'unique keys' => array(
+      'name' => array('name'),
+    ),
+  );
+
+  $schema['recipe_ingredient'] = array(
+    'description' => 'Hypothetical table of recipe ingredients',
+    'fields' => array(
+      'riid' => array(
+        'description' => 'Primary key',
+        'type' => 'serial',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'rid' => array(
+        'description' => 'Foreign key: recipe (imaginary for this example)',
+        'type' => 'int',
+        'size' => 'big',
+        'default' => 0,
+        'not null' => TRUE,
+      ),
+      'iid' => array(
+        'description' => 'Foreign key: ingredient',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'qty' => array(
+        'description' => 'Numerical quantity of units',
+        'type' => 'float',
+        'not null' => TRUE,
+      ),
+      'qty_unit' => array(
+        'description' => 'Name of units',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => "''",
+        'not null' => TRUE,
+      ),
+    ),
+    'foreign keys' => array(
+      'ingredient_on_recipe' => array(
+        'table' => 'ingredient',
+        'columns' => array('iid' => 'iid'),
+      ),  
+    ),
+    'primary key' => array(
+      'riid',
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Installs the default vocabularies needed by the module.
+ *
+ * @return
+ *   Returns the machine_name if there was an error during installation,
+ *   false otherwise.
+ */
+function entity_recipe_install_vocabularies() {
+	$vocabularies = _entity_recipe_vocabularies();
+	foreach ($vocabularies as $machine_name => $vocabulary) {
+		// We don't want to override existing vocabularies
+		$conflict = taxonomy_vocabulary_machine_name_load($machine_name);
+		if (!$conflict) {
+			// Create and check for error
+			if (taxonomy_vocabulary_save((object) $vocabulary) === FALSE) {
+				// Send the machine_name of the vocabulary that caused the problem
+				return $machine_name;
+			}
+			// Example: Retrieve the wrapper and update the description:
+			$entity = taxonomy_vocabulary_machine_name_load($machine_name);
+			$wrapper = entity_metadata_wrapper('taxonomy_vocabulary', $entity);
+			$current = $wrapper->description->value();
+			$wrapper->description = $current . ' Created by Entity recipe module';
+			$wrapper->save(); // To delete use: $wrapper->delete()
+		}
+	}
+	return FALSE;
+}
+
+/**
+ * Installs the default terms needed by our module.
+ */
+function entity_recipe_install_terms() {
+	foreach (array_keys(_entity_recipe_vocabularies()) as $machine_name) {
+		// Get the vocabulary entity and wrapper
+		$entity = taxonomy_vocabulary_machine_name_load($machine_name);
+		$wrapper = entity_metadata_wrapper('taxonomy_vocabulary', $entity);
+		// Make sure the vocabulary hasn't been populared yet.
+		if ($wrapper->term_count->value() == 0) {
+			$path = drupal_get_path('module', 'entity_recipe') . 
+				'/includes/terms_' . $machine_name . '.txt';
+			$lines = file($path, FILE_SKIP_EMPTY_LINES);
+			entity_recipe_install_term_tree($wrapper, $lines);
+		}
+	}		
+}
+
+/**
+ * Installs a term tree.
+ *
+ * @param $vocabulary_wrapper
+ *   EntityMetadataWrapper for a taxonomy_vocabulary entity.
+ * @param $lines
+ *   An array of lines from the term text file. The iterator must be set to the
+ *   line to parse.
+ * @param $last
+ *   Either NULL or the parent term ID.
+ * @param $depth
+ *   Curretn depth of the tree.
+ */
+function entity_recipe_install_term_tree($tv_wrapper, $lines, $last = NULL, $depth = 0) {
+	$term_wrapper = NULL;
+	// Iterate over each line from the term text file.
+	while ($line = current($lines)) {
+		$name = trim($line);
+		$line_depth = strlen($line) - strlen($name);
+		// Termination recursion: No more lines.
+		if ($line_depth < $depth) {
+			return;
+		}
+		// The current term lies deeper than the current depth: Make a recursive 
+		// call to go deeper adding 2 'spaces' to the depth.
+		else if ($line_depth > $depth) {
+			$tid = isset($term_wrapper) ? $term_wrapper->tid->value() : NULL;
+			entity_recipe_install_term_tree($tv_wrapper, $lines, $tid, $depth+1);
+		}
+		// The depth is reached for the current line and we create the term and
+		// proceed to the next line in the text file.
+		else {
+			$data = array(
+				'name' => $name,
+				'vid' => $tv_wrapper->vid->value(),
+				'parent' => ($last ? array($last) : array(0)),
+			);
+			$term_entity = entity_create('taxonomy_term', $data);
+			$term_wrapper = entity_metadata_wrapper('taxonomy_term', $term_entity);
+			$term_wrapper->save();
+			next($lines);
+		}
+	}
+}
+
+/**
+ * Wrapper function to hold our default vocabularies.
+ */
+function _entity_recipe_vocabularies() {
+	return array(
+		'cuisine' => array(
+			'name' => 'Cuisine',
+			'machine_name' => 'cuisine',
+			'description' => 'Contains terms representing different cuisines.',
+		),
+		'difficulty' => array(
+			'name' => 'Difficulty',
+			'machine_name' => 'difficulty',
+			'description' => 'Contains terms representing difficulty levels.',			
+		),
+	);
+}
+
+/**
+ * Install default vocabularies introduced in version 2 of the module (7.x-2.0).
+ */
+function entity_recipe_update_7200(&$sandbox) {
+	if ($machine_name = entity_recipe_install_vocabularies()) {
+		throw new DrupalUpdateException('Error occured when attempting create 
+			vocabulary: ' . $machine_name);
+	}
+}
+
+/**
+ * Install default terms introduced in version 2.1 of the module (7.x-2.1).
+ */
+function entity_recipe_update_7201(&$sandbox) {
+	entity_recipe_install_vocabularies();
+	entity_recipe_install_terms();
+}
