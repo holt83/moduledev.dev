@@ -82,7 +82,7 @@ function cs_adaptive_image_field_formatter_settings_form($field, $instance, $vie
       '#type' => 'textfield',
       '#default_value' => isset($settings['styles']['breakpoint_' . $i]) ? $settings['styles']['breakpoint_' . $i] : '',
       '#maxlength' => 5,
-      '#size' => 5,
+      '#size' => 5, 
       '#field_suffix' => 'px',
       '#element_validate' => array('element_validate_integer_positive'),
     );
@@ -185,6 +185,7 @@ function cs_adaptive_image_field_formatter_view($entity_type, $entity, $field, $
       '#fallback_style' => isset($settings['styles']['fallback_style']) ? _cs_adaptive_image_check_image_style($settings['styles']['fallback_style']) : '',
       '#path' => isset($uri) ? $uri : '',
     );
+    file_put_contents("/home/drupalpro/debug/debug2.txt", print_r($element[$delta] , TRUE), FILE_APPEND);
   }
 
   return $element;
