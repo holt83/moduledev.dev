@@ -17,34 +17,8 @@ function entity_fun_init() {
 		// Some fun with vocabulary entities:
 		$vocabulary_wrapper = _entity_fun_create_vocabulary('Entity test vocabulary', 
 			'entity_test_vocabulary');
-
-		$machine_name = 'cuisine';
-		$path = drupal_get_path('module', 'entity_recipe') . '/includes/terms_' . $machine_name . '.txt';
-		$lines = file($path, FILE_SKIP_EMPTY_LINES);
-		$terms = array();
-		$line_depth = 0;
-		while ($line = current($lines)) {
-			$line = trim($line);
-			$last_line_depth = $line_depth;
-			$is_child = strpos($line, '>');
-			if ($is_child) {
-				list($line_depth, $term_name) = explode(">", $line);
-				$line_depth = (int) strlen($line_depth);
-			}
-			else {
-				$line_depth = 0;
-				$term_name = $line;
-			}
-			$depth += ($line_depth - $last_line_depth);
-			$indent = '';
-			for ($i = 0; $i < $depth; $i++) {
-				$indent .= '  ';
-			}
-			$term = $term_name . ' (depth: ' . $depth . ')';
-			$terms[] = $indent . $term;
-			next($lines);				
-		}
-		// file_put_contents("/home/drupalpro/debug/debug.txt", print_r($terms , TRUE), FILE_APPEND);
+		module_load_install('entity_recipe');
+		entity_recipe_install_terms();
 	}
 }
 

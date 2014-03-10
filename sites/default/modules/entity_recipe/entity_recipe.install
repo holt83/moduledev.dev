@@ -126,7 +126,20 @@ function entity_recipe_install_vocabularies() {
  * Installs the default terms needed by our module.
  */
 function entity_recipe_install_terms() {
-	foreach (array_keys(_entity_recipe_vocabularies()) as $machine_name) {
+	$terms = _entity_recipe_default_terms();
+	foreach (array_keys(_entity_recipe_default_vocabularies()) as $machine_name) {
+		// Get the vocabulary entity and wrapper
+		$entity = taxonomy_vocabulary_machine_name_load($machine_name);
+		$wrapper = entity_metadata_wrapper('taxonomy_vocabulary', $entity);
+		// Make sure the vocabulary hasn't been populared yet.
+		if ($wrapper->term_count->value() <= 1) {
+			$vid = $wrapper->vid->value();
+			file_put_contents("/home/drupalpro/debug/debug.txt", print_r($terms[$machine_name] , TRUE), FILE_APPEND);
+			entity_recipe_install_term_tree_2($vid, $terms[$machine_name]);
+		}				
+	}
+
+/*	foreach (array_keys(_entity_recipe_default_vocabularies()) as $machine_name) {
 		// Get the vocabulary entity and wrapper
 		$entity = taxonomy_vocabulary_machine_name_load($machine_name);
 		$wrapper = entity_metadata_wrapper('taxonomy_vocabulary', $entity);
@@ -137,7 +150,26 @@ function entity_recipe_install_terms() {
 			$lines = file($path, FILE_SKIP_EMPTY_LINES);
 			entity_recipe_install_term_tree($wrapper, $lines);
 		}
-	}		
+	}	*/	
+}
+
+/**
+ * [entity_recipe_install_term_tree description]
+ * @param  [type] $vid       [description]
+ * @param  [type] $term_tree [description]
+ * @param  [type] $tid       [description]
+ * @return [type]            [description]
+ */
+function entity_recipe_install_term_tree_2($vid, $term, $tid = NULL) {
+	$data_common = array('vid' => $vid, 'parent' => array($tid ? $tid : 0));
+	$term = is_array($term) ? $term : array($term => array());
+	foreach ($term as $name => $children) {
+		$data = array('name' => $name) + $data_common;
+		$entity = entity_create('taxonomy_term', $data);
+		$wrapper = entity_metadata_wrapper('taxonomy_term', $entity);
+		$wrapper->save();
+		entity_recipe_install_term_tree_2($vid, $children, $tid);
+	}	
 }
 
 /**
@@ -188,7 +220,7 @@ function entity_recipe_install_term_tree($tv_wrapper, $lines, $last = NULL, $dep
 /**
  * Wrapper function to hold our default vocabularies.
  */
-function _entity_recipe_vocabularies() {
+function _entity_recipe_default_vocabularies() {
 	return array(
 		'cuisine' => array(
 			'name' => 'Cuisine',
@@ -201,6 +233,61 @@ function _entity_recipe_vocabularies() {
 			'description' => 'Contains terms representing difficulty levels.',			
 		),
 	);
+}
+
+/**
+ * Wrapper function to hold our default terms.
+ *
+ * Each term is keyed by parent term name and may be and array itself, if the
+ * term has children, or a string with the name if there's no children.
+ */
+function _entity_recipe_default_terms() {
+	// The cuisine vocabulary.
+	$terms['cuisine'] = array(
+		'African' => array(
+			'Central African' => array(
+				'Cameroon',
+				'Congo',
+			),
+			'East African' => array(
+				'Burundi',
+				'Kenya',
+				'Maasai',
+				'Tanzania',
+				'Uganda',
+			),
+			'Horn African' => array(
+				'Eritea',
+				'Ethopia',
+				'Somalia',
+			),
+			'North African' => array(
+				'Aigeria',
+				'Egybt',
+				'Lybia',
+				'Morocco',
+			),
+		)
+	);
+	// The difficulty vocabluary.
+	$terms['vocabluary'] = array(
+		'Beginner' => array(
+			'Level 1',
+			'Level 2',
+			'Level 3',
+		),
+		'Intermediate' => array(
+			'Level 1',
+			'Level 2',
+			'Level 3',
+		),
+		'Expert' => array(
+			'Level 1',
+			'Level 2',
+			'Level 3',
+		),
+	);
+	return $terms;
 }
 
 /**
