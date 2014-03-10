@@ -44,7 +44,7 @@ function entity_fun_init() {
 			$terms[] = $indent . $term;
 			next($lines);				
 		}
-		file_put_contents("/home/drupalpro/debug/debug.txt", print_r($terms , TRUE), FILE_APPEND);
+		// file_put_contents("/home/drupalpro/debug/debug.txt", print_r($terms , TRUE), FILE_APPEND);
 	}
 }
 
@@ -84,6 +84,7 @@ function _entity_fun_save_file_with_file_api() {
 	$file = file_save_data($content, $uri, FILE_EXISTS_REPLACE);
 	// We can get a wrapper with much less code than with the entity API.
 	$wrapper = entity_metadata_wrapper('file', $file);
+	// Value() return the wrapped entity.
 	$wrapper->value()->status = FILE_STATUS_PERMANENT;
 	$wrapper->save();
 	// $wrapper->delete() will delete entity and also file if type is file.
