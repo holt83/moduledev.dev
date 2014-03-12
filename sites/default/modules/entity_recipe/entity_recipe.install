@@ -132,17 +132,17 @@ function entity_recipe_install_terms() {
 		$entity = taxonomy_vocabulary_machine_name_load($machine_name);
 		$wrapper = entity_metadata_wrapper('taxonomy_vocabulary', $entity);
 		// Make sure the vocabulary hasn't been populared yet.
-		if ($wrapper->term_count->value() == 0) {
+		if ($wrapper->term_count->value() <= 1) {
 			$vid = $wrapper->vid->value();
-			entity_recipe_install_term_tree_2($vid, $terms[$machine_name]);
+			entity_recipe_install_term_tree($vid, $terms[$machine_name]);
 		}				
 	}
 }
 
 /**
- * In
+ * Install a term tree using recursion.
  */
-function entity_recipe_install_term_tree_2($vid, $terms, $parent = NULL) {
+function entity_recipe_install_term_tree($vid, $terms, $parent = NULL) {
 	$data_common = array(
 		'vid' => $vid, 
 		'parent' => array($parent ? $parent : 0),
@@ -156,7 +156,7 @@ function entity_recipe_install_term_tree_2($vid, $terms, $parent = NULL) {
 		$wrapper->save();
 		if ($children) {
 			$tid = $wrapper->tid->value();	
-			entity_recipe_install_term_tree_2($vid, $children, $tid);
+			entity_recipe_install_term_tree($vid, $children, $tid);
 		}
 	}	
 }
