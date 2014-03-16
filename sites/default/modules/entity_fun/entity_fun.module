@@ -11,6 +11,12 @@
 function entity_fun_init() {
 	static $called = FALSE;
 	if (!$called) {
+		// Play around with node 50
+		$node = entity_load('node', array(50));
+		$node = $node[50];
+		$node_wrapper = entity_metadata_wrapper('node', $node);
+		$file_wrapper = $node_wrapper->field_image->file;
+    //file_put_contents("/home/drupalpro/debug/debug.txt", print_r($node_wrapper->body->type(), TRUE), FILE_EXISTS_REPLACE);
 		// Some fun the file entity, which is a single-bundle-non-fieldable entity.
 		$file_entity_wrapper_1 = _entity_fun_save_file_with_entity_api();
 		$result = _entity_fun_save_file_with_file_api();
