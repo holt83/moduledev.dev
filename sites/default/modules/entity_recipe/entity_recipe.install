@@ -20,6 +20,7 @@ function entity_recipe_install() {
  * Defines our entity base tables.
  */
 function entity_recipe_schema() {
+	// Table for the main ingredient entity.
   $schema['ingredient'] = array(
     'description' => 'Hypothetical ingredient table',
     'fields' => array(
@@ -35,6 +36,13 @@ function entity_recipe_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
+      'type' => array(
+      	'description' => 'The type of this ingredient.',
+      	'type' => 'varchar',
+      	'length' => 32,
+      	'not null' => TRUE,
+      	'default' => 'standard',
+      ),
     ),
     'primary key' => array(
       'iid',
@@ -43,7 +51,10 @@ function entity_recipe_schema() {
       'name' => array('name'),
     ),
   );
-
+  $schema['ingredient_type'] = array(
+  );
+  // Table for the recipe_ingredient eniity, which describes an ingredient 
+  // entity in use in a recipe.
   $schema['recipe_ingredient'] = array(
     'description' => 'Hypothetical table of recipe ingredients',
     'fields' => array(
@@ -232,4 +243,15 @@ function _entity_recipe_default_terms() {
 		),
 	);
 	return $terms;
+}
+
+function entity_recipe_update_7205(&$sandbox) {
+  $type_schema = array(
+  	'description' => 'The type of this ingredient.',
+  	'type' => 'varchar',
+  	'length' => 32,
+  	'not null' => TRUE,
+  	'default' => 'standard',
+  );
+  db_add_field('ingredient', 'type', $type_schema);
 }

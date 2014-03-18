@@ -13,14 +13,21 @@ function entity_recipe_entity_info() {
   $info = array();
   $info['ingredient'] = array(
     'label' => t('Ingredient'),
+    'plural label' => t('Ingredients'),
     'entity class' => 'Entity',
     'controller class' => 'EntityAPIController',
     'base table' => 'ingredient',
     'entity keys' => array(
       'id' => 'iid',
       'label' => 'name',
+      'bundle' => 'type',
     ),
-    'fieldable' => FALSE,
+    'bundles' => array(
+      'standard' => array(
+        'label' => t('Standard'),
+      ),
+    ),
+    'fieldable' => TRUE,
   );
   $info['recipe_ingredient'] = array(
     'label' => t('Recipe Ingredient'),
@@ -31,7 +38,7 @@ function entity_recipe_entity_info() {
     'entity keys' => array(
       'id' => 'riid',
     ),
-    'fieldable' => FALSE,
+    'fieldable' => TRUE,
   );
 
   return $info;
