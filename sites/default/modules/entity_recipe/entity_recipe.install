@@ -22,7 +22,7 @@ function entity_recipe_install() {
 function entity_recipe_schema() {
 	// Table for the main ingredient entity.
   $schema['ingredient'] = array(
-    'description' => 'Hypothetical ingredient table',
+    'description' => 'Stores information about each ingredient.',
     'fields' => array(
       'iid' => array(
         'description' => 'Primary key',
@@ -51,12 +51,67 @@ function entity_recipe_schema() {
       'name' => array('name'),
     ),
   );
+  // Table for the ingredient bundle type.
   $schema['ingredient_type'] = array(
+  	'description' => 'Stores information about defined ingredient types.',
+  	'fields' => array(
+  		'id' => array(
+  			'type' => 'serial',
+  			'not null' => TRUE,
+  			'description' => 'Primary key: Unique ingredient type ID.',
+  		),
+  		'type' => array(
+  			'description' => 'The machine-readable name of this ingredient type.',
+  			'type' => 'varchar',
+  			'length' => 32,
+  			'not null' => TRUE,
+  		),
+  		'label' => array(
+  			'description' => 'The human-readable name of this ingredient type.',
+  			'type' => 'varchar',
+  			'length' => 255,
+  			'not null' => TRUE,
+  			'default' => '',
+  		),
+  		'weight' => array(
+  			'description' => 'The weight of this ingredient type compared to others.',
+  			'type' => 'int',
+  			'not null' => TRUE,
+  			'size' => 'tiny',
+  			'default' => 0,
+  		),
+  		'data' => array(
+  			'description' => 'A serialized array with additional data for this 
+  				ingredient type.',
+  			'type' => 'text',
+  			'not null' => FALSE,
+  			'size' => 'big',
+  		),
+  		'status' => array(
+  			'description' => 'The exportable status of the entity type.',
+  			'type' => 'int',
+  			'not null' => TRUE,
+  			'size' => 'tiny',
+  			// Set to: ENTITY_CUSTOM (Not safe to use constants at this point)
+  			'default' => 0x01,
+  		),
+  		'module' => array(
+  			'description' => 'The name of providing module if the entity type has 
+  				been defined in code.',
+  			'type' => 'varchar',
+  			'length' => 255,
+  			'not null' => FALSE,
+  		),
+  	),
+		'primary key' => array('id'),
+		'unique keys' => array(
+			'type' => array('type'),
+		),
   );
   // Table for the recipe_ingredient eniity, which describes an ingredient 
   // entity in use in a recipe.
   $schema['recipe_ingredient'] = array(
-    'description' => 'Hypothetical table of recipe ingredients',
+    'description' => 'Stores information about each ingredient used in a recipe.',
     'fields' => array(
       'riid' => array(
         'description' => 'Primary key',
@@ -245,6 +300,9 @@ function _entity_recipe_default_terms() {
 	return $terms;
 }
 
+/**
+ * Adds the 'type' entity bundle-field to the ingredient table.
+ */
 function entity_recipe_update_7205(&$sandbox) {
   $type_schema = array(
   	'description' => 'The type of this ingredient.',
@@ -255,3 +313,82 @@ function entity_recipe_update_7205(&$sandbox) {
   );
   db_add_field('ingredient', 'type', $type_schema);
 }
+
+/**
+ * Adds the 'ingredient_type' table to store information about each defined
+ * bundle of the ingredient entity.
+ */
+function entity_recipe_update_7206(&$sandbox) {
+	$table_name = 'ingredient_type';
+  $schema[$table_name] = array(
+  	'description' => 'Stores information about defined ingredient types.',
+  	'fields' => array(
+  		'id' => array(
+  			'type' => 'serial',
+  			'not null' => TRUE,
+  			'description' => 'Primary key: Unique ingredient type ID.',
+  		),
+  		'type' => array(
+  			'description' => 'The machine-readable name of this ingredient type.',
+  			'type' => 'varchar',
+  			'length' => 32,
+  			'not null' => TRUE,
+  		),
+  		'label' => array(
+  			'description' => 'The human-readable name of this ingredient type.',
+  			'type' => 'varchar',
+  			'length' => 255,
+  			'not null' => TRUE,
+  			'default' => '',
+  		),
+  		'weight' => array(
+  			'description' => 'The weight of this ingredient type compared to others.',
+  			'type' => 'int',
+  			'not null' => TRUE,
+  			'size' => 'tiny',
+  			'default' => 0,
+  		),
+  		'data' => array(
+  			'description' => 'A serialized array with additional data for this 
+  				ingredient type.',
+  			'type' => 'text',
+  			'not null' => FALSE,
+  			'size' => 'big',
+  		),
+  		'status' => array(
+  			'description' => 'The exportable status of the entity type.',
+  			'type' => 'int',
+  			'not null' => TRUE,
+  			'size' => 'tiny',
+  			// Set to: ENTITY_CUSTOM (Not safe to use constants at this point)
+  			'default' => 0x01,
+  		),
+  		'module' => array(
+  			'description' => 'The name of providing module if the entity type has 
+  				been defined in code.',
+  			'type' => 'varchar',
+  			'length' => 255,
+  			'not null' => FALSE,
+  		),
+  	),
+		'primary key' => array('id'),
+		'unique keys' => array(
+			'type' => array('type'),
+		),
+  );
+	db_create_table($table_name, $schema[$table_name]);
+}
+
+/**
+ * Add the standard ingredient type to the database.
+ */
+function entity_recipe_update_7207(&$sandbox) {
+	$query = db_insert('ingredient_type');
+	$query->fields(array(
+		'type' => 'standard',
+		'label' => 'Standard',
+		'status' => 0x02, // ENTITY_IN_CODE
+		'module' => 'entity_recipe',
+	));
+	$query->execute();
+} 

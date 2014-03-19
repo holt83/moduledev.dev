@@ -11,12 +11,22 @@
  */
 function entity_recipe_entity_info() {
   $info = array();
+
+  // Main ingredient entity.
   $info['ingredient'] = array(
     'label' => t('Ingredient'),
     'plural label' => t('Ingredients'),
+    'description' => t('Ingredients to be used in recipes.'),
     'entity class' => 'Entity',
     'controller class' => 'EntityAPIController',
     'base table' => 'ingredient',
+    'fieldable' => TRUE,
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full content'),
+        'custom settings' => FALSE,
+      ),
+    ),
     'entity keys' => array(
       'id' => 'iid',
       'label' => 'name',
@@ -27,18 +37,51 @@ function entity_recipe_entity_info() {
         'label' => t('Standard'),
       ),
     ),
-    'fieldable' => TRUE,
+    'bundle keys' => array(
+      'bundle' => 'type',
+    ),
+    'label callback' => 'entity_class_label',
+    'uri callback' => 'entity_class_uri',
+    'module' => 'entity_recipe',
   );
+
+  // Add bundle infor, but bypass entity_load() as we cannot use it here.
+  $types = db_select('ingredient_type', 'it')
+    ->fields('it')
+    ->condition('type', 'standard', '!=')
+    ->execute()
+    ->fetchAllAssoc('type');
+  foreach ($types as $type => $type_info) {
+    $info['ingredient']['bundles'][$type] = array(
+      'label' => $type_info->label,
+      'admin' => array(
+        'path' => 'admin/structure/ingredients/manage/&ingredient_type',
+        'real path' => 'admin/structure/ingredients/manage/' . $type,
+        'bundle argument' => 4,
+        'access arguments' => array('administer ingredients'),
+      ),
+    );
+  }
+
+  // Seperate single-bundle entity to describe an ingredient in use in a recipe.
   $info['recipe_ingredient'] = array(
     'label' => t('Recipe Ingredient'),
+    'description' => t('Ingredient used in a recipe.'),
     'entity class' => 'Entity',
     'controller class' => 'EntityAPIController',
     'base table' => 'recipe_ingredient',
-    'label callback' => 'entity_recipe_ri_label',
+    'fieldable' => TRUE,    
+    'view modes' => array(
+      'full' => array(
+        'label' => t('Full content'),
+        'custom settings' => FALSE,
+      ),
+    ),    
     'entity keys' => array(
       'id' => 'riid',
     ),
-    'fieldable' => TRUE,
+    'label callback' => 'entity_recipe_ri_label',
+    'module' => 'entity_recipe',    
   );
 
   return $info;
