@@ -32,11 +32,7 @@ function entity_recipe_entity_info() {
       'label' => 'name',
       'bundle' => 'type',
     ),
-    'bundles' => array(
-      'standard' => array(
-        'label' => t('Standard'),
-      ),
-    ),
+    'bundles' => array(),
     'bundle keys' => array(
       'bundle' => 'type',
     ),
@@ -48,7 +44,6 @@ function entity_recipe_entity_info() {
   // Add bundle infor, but bypass entity_load() as we cannot use it here.
   $types = db_select('ingredient_type', 'it')
     ->fields('it')
-    ->condition('type', 'standard', '!=')
     ->execute()
     ->fetchAllAssoc('type');
   foreach ($types as $type => $type_info) {
@@ -63,9 +58,36 @@ function entity_recipe_entity_info() {
     );
   }
 
+  // A 'bundle definition entity' that stores information about each defined 
+  // ingredient type.
+  $info['ingredient_type'] = array(
+    'label' => t('Ingredient type'),
+    'plural label' => t('Ingredient types'),
+    'description' => t('Ingredient types for the ingredient entity.'),
+    'entity class' => 'IngredientType',
+    'controller class' => 'EntityAPIControllerExportable',
+    'base table' => 'ingredient_type',
+    'fieldable' => FALSE,
+    'bundle of' => 'ingredient',
+    'entity keys' => array(
+      'id' => 'id',
+      'name' => 'type', // This field provides the machine-readable type name.
+      'label' => 'label',
+    ),
+    'access callback' => 'entity_recipe_access',
+    'module' => 'entity_recipe',
+    // Enable the entity API's admin UI.
+    'admin ui' => array(
+      'path' => 'admin/structure/ingredients',
+      'file' => 'entity_recipe.admin.inc',
+      'controller' => 'IngredientTypeUIController',
+    ),
+  );
+
   // Seperate single-bundle entity to describe an ingredient in use in a recipe.
   $info['recipe_ingredient'] = array(
     'label' => t('Recipe Ingredient'),
+    'plural label' => t('Recipe ingredients'),
     'description' => t('Ingredient used in a recipe.'),
     'entity class' => 'Entity',
     'controller class' => 'EntityAPIController',
