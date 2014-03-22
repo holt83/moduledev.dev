@@ -110,6 +110,67 @@ function entity_recipe_entity_info() {
 }
 
 /**
+ * Using a custom class for the ingredient type, enables us to define custom 
+ * behavior for objects of the ingredient type entity. 
+ * 
+ * In this case we are adding a new method, called isLocked(), which tells
+ * whether the type can be safely deleted or not.
+ *
+ * We're also overriding and extending the save() method, so that we can flush
+ * the Field API's field info cache, so that changes to extra fields, added to
+ * the entity, will be reflected.
+ */
+class IngredientType extends Entity {
+  // Machine-name
+  public $type;
+  // Human-readable name
+  public $label;
+  // Listing weight
+  public $weight = 0;
+
+  public function __construct($values = array()) {
+    parent::__construct($values, 'ingredient_type');
+  }
+
+  /**
+   * Returns whether the ingredient types is locked (used in code or fixed).
+   */
+  public function isLocked() {
+    return isset($this->status) && empty($this->is_new) &&
+      ($this->status == ENTITY_IN_CODE || $this->status == ENTITY_FIXED);
+  }
+
+  /**
+   * Overrides Entity::save().
+   */
+  public function save() {
+    parent::save();
+    field_info_cache_clear();
+  }
+}
+
+/**
+ * Ingredient type entity UI-controller.
+ *
+ * An example of how alterations to the Entity API's admin UI is done, by 
+ * implementing a custom UI-controller. 
+ * 
+ * This is not required. The default UI-controller can be specified as 
+ * 'controller class' in entity info, if there's no alterations required.
+ */
+class IngredientTypeUIController extends EntityDefaultUIController {
+  /**
+   * Overrides hook_menu() defaults.
+   */
+  public function hook_menu() {
+    $items = parent::hook_menu();
+    $items[$this->path]['description'] 
+      = 'Manage ingredients, including fields.';
+    return $items;
+  }
+}
+
+/**
  * Implements hook_entity_property_info_alter().
  */
 function entity_recipe_entity_property_info_alter(&$info) {
