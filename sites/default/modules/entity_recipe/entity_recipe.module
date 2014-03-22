@@ -110,6 +110,13 @@ function entity_recipe_entity_info() {
 }
 
 /**
+ * Access callback for the entity API.
+ */
+function entity_recipe_access($op, $type = NULL, $account = NULL) {
+  return user_access('administer ingredients', $account);
+}
+
+/**
  * Using a custom class for the ingredient type, enables us to define custom 
  * behavior for objects of the ingredient type entity. 
  * 
