@@ -318,7 +318,7 @@ function entity_recipe_update_7205(&$sandbox) {
  * Adds the 'ingredient_type' table to store information about each defined
  * bundle of the ingredient entity.
  */
-function entity_recipe_update_7206(&$sandbox) {
+function entity_recipe_update_7207(&$sandbox) {
 	$table_name = 'ingredient_type';
   $schema[$table_name] = array(
   	'description' => 'Stores information about defined ingredient types.',
@@ -378,17 +378,3 @@ function entity_recipe_update_7206(&$sandbox) {
   );
 	db_create_table($table_name, $schema[$table_name]);
 }
-
-/**
- * Add the standard ingredient type to the database.
- */
-function entity_recipe_update_7207(&$sandbox) {
-	$query = db_insert('ingredient_type');
-	$query->fields(array(
-		'type' => 'standard',
-		'label' => 'Standard',
-		'status' => 0x02, // ENTITY_IN_CODE
-		'module' => 'entity_recipe',
-	));
-	$query->execute();
-} 

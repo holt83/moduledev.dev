@@ -117,6 +117,46 @@ function entity_recipe_access($op, $type = NULL, $account = NULL) {
 }
 
 /**
+ * Menu load-handler (admin/structure/ingredients/manage/&ingredient_type)
+ *
+ * @param $ingredient_type
+ *   The machine-name of the ingredient type passed from the url.
+ */
+function ingredient_type_load($ingredient_type) {
+  return entity_recipe_get_ingredient_types($ingredient_type);
+}
+
+/**
+ * Provides access to the ingredient types defined in the system.
+ *
+ * @param $ingredient_type (optional)
+ *   If set, the ingredient type with the machine-name will be returned.
+ * @return
+ *   Returns an ingredient type entity if a machine-name was supplied.
+ *   Else an array of ingredient types, keyed by machine-name.
+ */
+function entity_recipe_get_ingredient_types($ingredient_type = NULL) {
+  $types = entity_load_multiple_by_name('ingredient_type', 
+    isset($ingredient_type) ? array($ingredient_type) : FALSE);
+  return isset($ingredient_type) ? reset($types) : $types;
+}
+
+/**
+ * Implements hook_default_ENTITY_TYPE_type().
+ *
+ * This hook can be used to provide default bundles for entity types.
+ */
+function entity_recipe_default_ingredient_type_type() {
+  $types['standard'] = array(
+    'type' => 'standard',
+    'label' => t('Standard'),
+    'weight' => 0,
+    'status' => ENTITY_FIXED,
+  );
+  return $types;
+}
+
+/**
  * Using a custom class for the ingredient type, enables us to define custom 
  * behavior for objects of the ingredient type entity. 
  * 
