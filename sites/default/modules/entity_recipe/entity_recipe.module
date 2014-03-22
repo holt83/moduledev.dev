@@ -151,7 +151,8 @@ function entity_recipe_default_ingredient_type_type() {
     'type' => 'standard',
     'label' => t('Standard'),
     'weight' => 0,
-    'status' => ENTITY_FIXED,
+    // Uncomment to prevent changes to the standard bunlde type.
+    // 'status' => ENTITY_FIXED,
   );
   return $types;
 }
