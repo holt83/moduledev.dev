@@ -8,9 +8,14 @@
 
 /**
  * Functionality tests for email example module.
+ *
+ * @ingroup email_example
  */
 class EmailExampleTestCase extends DrupalWebTestCase {
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'Email example',
@@ -19,7 +24,10 @@ class EmailExampleTestCase extends DrupalWebTestCase {
     );
   }
 
-  function setUp() {
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
     // Enable the email_example module.
     parent::setUp('email_example');
   }
@@ -27,12 +35,12 @@ class EmailExampleTestCase extends DrupalWebTestCase {
   /**
    * Verify the functionality of the example module.
    */
-  function testContactForm() {
+  public function testContactForm() {
     // Create and login user.
     $account = $this->drupalCreateUser();
     $this->drupalLogin($account);
 
-    // Set default language for t() translations
+    // Set default language for t() translations.
     $t_options = array(
       'langcode' => language_default()->language,
     );
@@ -53,7 +61,6 @@ class EmailExampleTestCase extends DrupalWebTestCase {
     $result = $this->drupalPost('example/email_example', $email_options, t('Submit'));
 
     // Verify that email address is valid and email was sent.
- //   $this->assertText(t('Your message has been sent.'), 'Options were validated and form submitted.');
     $this->assertTrue(count($this->drupalGetMails()), 'An email has been sent.');
 
     // Validate sent email.

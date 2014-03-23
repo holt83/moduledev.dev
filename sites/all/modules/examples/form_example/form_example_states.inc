@@ -7,6 +7,8 @@
  */
 
 /**
+ * States demo form.
+ *
  * This form shows off the #states system by dynamically showing parts of the
  * form based on the state of other parts.
  *
@@ -35,7 +37,9 @@
  * @code
  * '#states' => array(
  *   'action_to_take_on_this_form_element' => array(
- *     'jquery_selector_for_another_element' => array('condition_type' => value),
+ *     'jquery_selector_for_another_element' => array(
+ *       'condition_type' => value,
+ *     ),
  *   ),
  * ),
  * @endcode
@@ -45,7 +49,8 @@
  * 'country_writein' element below for an example.
  *
  * Note that the easiest way to select a textfield, checkbox, or select is with
- * the @link http://api.jquery.com/input-selector/ ':input' jquery shortcut @endlink,
+ * the
+ * @link http://api.jquery.com/input-selector/ ':input' jquery shortcut @endlink,
  * which selects any any of those.
  *
  * There are examples below of changing or hiding an element when a checkbox
@@ -53,7 +58,7 @@
  *
  * See drupal_process_states() for full documentation.
  *
- * See also @link http://api.drupal.org/api/drupal/developer--topics--forms_api_reference.html/7#states Form API Reference @endlink
+ * @see forms_api_reference.html
  */
 function form_example_states_form($form, &$form_state) {
   $form['student_type'] = array(
@@ -63,7 +68,7 @@ function form_example_states_form($form, &$form_state) {
       'undergraduate' => t('Undergraduate'),
       'graduate'      => t('Graduate'),
     ),
-    '#title' => t('What type of student are you?')
+    '#title' => t('What type of student are you?'),
   );
   $form['high_school'] = array(
     '#type' => 'fieldset',
@@ -88,7 +93,8 @@ function form_example_states_form($form, &$form_state) {
     // element which triggers the behavior, and then defines the "High School"
     // value as the one that triggers visibility.
     '#states' => array(
-      'visible' => array(   // action to take.
+      // Action to take.
+      'visible' => array(
         ':input[name="student_type"]' => array('value' => 'high_school'),
       ),
     ),
@@ -102,7 +108,8 @@ function form_example_states_form($form, &$form_state) {
     // This #states rule limits visibility to when the $form['tests_taken']
     // 'SAT' checkbox is checked."
     '#states' => array(
-      'visible' => array(  // action to take.
+      // Action to take.
+      'visible' => array(
         ':input[name="tests_taken[SAT]"]' => array('checked' => TRUE),
       ),
     ),
@@ -114,7 +121,8 @@ function form_example_states_form($form, &$form_state) {
 
     // Set this element visible if the ACT checkbox above is checked.
     '#states' => array(
-      'visible' => array(  // action to take.
+      // Action to take.
+      'visible' => array(
         ':input[name="tests_taken[ACT]"]' => array('checked' => TRUE),
       ),
     ),
@@ -175,7 +183,8 @@ function form_example_states_form($form, &$form_state) {
 
     // Only show this field if school_country is set to 'Other'.
     '#states' => array(
-      'visible' => array(  // Action to take: Make visible.
+      // Action to take: Make visible.
+      'visible' => array(
         ':input[name="school_country"]' => array('value' => t('Other')),
       ),
     ),
@@ -228,7 +237,7 @@ function form_example_states_form($form, &$form_state) {
     '#states' => array(
       // Mark this checkbox checked if the "more_info" textarea has something
       // in it, if it's 'filled'.
-      'checked' => array(      // Action to take: check the checkbox.
+      'checked' => array(
         ':input[name="more_info"]' => array('filled' => TRUE),
       ),
     ),

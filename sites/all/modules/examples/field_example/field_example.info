@@ -4,9 +4,9 @@ package = Example modules
 core = 7.x
 files[] = field_example.test
 
-; Information added by  packaging script on 2013-11-04
+; Information added by Drupal.org packaging script on 2014-03-09
 version = "7.x-1.x-dev"
 core = "7.x"
 project = "examples"
-datestamp = "1383601761"
+datestamp = "1394327312"
 
