@@ -9,7 +9,7 @@
 /**
  * Form-builder callback for the ingredient type edit form.
  */
-function entity_recipe_ingredient_type_form($form, &$form_state, $ingredient_type, $op = 'edit') {
+function ingredient_type_form($form, &$form_state, $ingredient_type, $op = 'edit') {
 	if ($op == 'clone') {
 		$ingredient_type->label .= (' (cloned)');
 		// Can't have two ingredient types with identical machine-names.
@@ -28,7 +28,7 @@ function entity_recipe_ingredient_type_form($form, &$form_state, $ingredient_typ
 	// Machine-readable ingredient type name.
 	$form['type'] = array(
 		'#type' => 'machine_name',
-		'#default_value' => isset($ingredient_type->type ? $ingredient_type->type : ''),
+		'#default_value' => isset($ingredient_type->type) ? $ingredient_type->type : '',
 		'#max_length' => 32,
 		'#disabled' => $ingredient_type->isLocked() && $op != 'clone',
 		'#machine_name' => array(
@@ -66,7 +66,7 @@ function entity_recipe_ingredient_type_form($form, &$form_state, $ingredient_typ
 			'#weight' => 45,
 			// Don't validate any form elements as the data is being deleted anyway.
 			'#limit_validation_errors' => array(),
-			'#submit' => array('entity_recipe_ingredient_type_form_delete'),
+			'#submit' => array('ingredient_type_form_delete'),
 		);
 	}
 
@@ -76,17 +76,17 @@ function entity_recipe_ingredient_type_form($form, &$form_state, $ingredient_typ
 /**
  * Form API submit callback for the submit button on ingredient type form.
  */
-function entity_recipe_ingredient_type_form_submit(&$form, &$form_state) {
+function ingredient_type_form_submit(&$form, &$form_state) {
 	$ingredient_type = entity_ui_form_submit_build_entity($form, $form_state);
 	// Save and go back.
 	$ingredient_type->save();
-	$form['redirect'] = 'admin/structure/ingredients';
+	$form_state['redirect'] = 'admin/structure/ingredients';
 }
 
 /**
  * Form API submit callback for the delete button on ingredient type form.
  */
-function entity_recipe_ingredient_type_form_delete(&$form, &$form_state) {
+function ingredient_type_form_delete(&$form, &$form_state) {
 	$type = $form_state['ingredient_type']->type;
-	$form['redirect'] = "admin/structure/ingredients/manage/$type/delete";
+	$form_state['redirect'] = "admin/structure/ingredients/manage/$type/delete";
 }

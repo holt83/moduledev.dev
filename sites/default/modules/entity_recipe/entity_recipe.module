@@ -41,23 +41,6 @@ function entity_recipe_entity_info() {
     'module' => 'entity_recipe',
   );
 
-  // Add bundle infor, but bypass entity_load() as we cannot use it here.
-  $types = db_select('ingredient_type', 'it')
-    ->fields('it')
-    ->execute()
-    ->fetchAllAssoc('type');
-  foreach ($types as $type => $type_info) {
-    $info['ingredient']['bundles'][$type] = array(
-      'label' => $type_info->label,
-      'admin' => array(
-        'path' => 'admin/structure/ingredients/manage/&ingredient_type',
-        'real path' => 'admin/structure/ingredients/manage/' . $type,
-        'bundle argument' => 4,
-        'access arguments' => array('administer ingredients'),
-      ),
-    );
-  }
-
   // A 'bundle definition entity' that stores information about each defined 
   // ingredient type.
   $info['ingredient_type'] = array(
@@ -69,6 +52,7 @@ function entity_recipe_entity_info() {
     'base table' => 'ingredient_type',
     'fieldable' => FALSE,
     'bundle of' => 'ingredient',
+    'exportable' => TRUE,
     'entity keys' => array(
       'id' => 'id',
       'name' => 'type', // This field provides the machine-readable type name.
@@ -80,37 +64,34 @@ function entity_recipe_entity_info() {
     'admin ui' => array(
       'path' => 'admin/structure/ingredients',
       'file' => 'entity_recipe.admin.inc',
-      'controller' => 'IngredientTypeUIController',
+      'controller class' => 'IngredientTypeUIController',
     ),
-  );
-
-  // Seperate single-bundle entity to describe an ingredient in use in a recipe.
-  $info['recipe_ingredient'] = array(
-    'label' => t('Recipe Ingredient'),
-    'plural label' => t('Recipe ingredients'),
-    'description' => t('Ingredient used in a recipe.'),
-    'entity class' => 'Entity',
-    'controller class' => 'EntityAPIController',
-    'base table' => 'recipe_ingredient',
-    'fieldable' => TRUE,    
-    'view modes' => array(
-      'full' => array(
-        'label' => t('Full content'),
-        'custom settings' => FALSE,
-      ),
-    ),    
-    'entity keys' => array(
-      'id' => 'riid',
-    ),
-    'label callback' => 'entity_recipe_ri_label',
-    'module' => 'entity_recipe',    
   );
 
   return $info;
 }
 
 /**
- * Access callback for the entity API.
+ * Implements hook_entity_info_alter().
+ *
+ * To be sure we can use entity_load()?
+ */
+function entity_recipe_entity_info_alter(&$entity_info) {
+  foreach (entity_recipe_get_ingredient_types() as $type => $type_info) {
+    $info['ingredient']['bundles'][$type] = array(
+      'label' => $type_info->label,
+      'admin' => array(
+        'path' => 'admin/structure/ingredients/manage/%ingredient_type',
+        'real path' => 'admin/structure/ingredients/manage/' . $type,
+        'bundle argument' => 4,
+        'access arguments' => array('administer ingredients'),
+      ),
+    );
+  }  
+}
+
+/**
+ * Access callback for the entity API.  
  */
 function entity_recipe_access($op, $type = NULL, $account = NULL) {
   return user_access('administer ingredients', $account);
@@ -136,37 +117,29 @@ function ingredient_type_load($ingredient_type) {
  *   Else an array of ingredient types, keyed by machine-name.
  */
 function entity_recipe_get_ingredient_types($ingredient_type = NULL) {
-  $types = entity_load_multiple_by_name('ingredient_type', 
-    isset($ingredient_type) ? array($ingredient_type) : FALSE);
+  // Use this to the entities keyed by our type field.
+  $types = entity_load_multiple_by_name('ingredient_type', isset($ingredient_type) ? array($ingredient_type) : FALSE);
   return isset($ingredient_type) ? reset($types) : $types;
 }
 
 /**
- * Implements hook_default_ENTITY_TYPE_type().
+ * Implements hook_default_ENTITY_TYPE().
  *
  * This hook can be used to provide default bundles for entity types.
  */
-function entity_recipe_default_ingredient_type_type() {
-  $types['standard'] = array(
+function entity_recipe_default_ingredient_type() {
+  $types['standard'] = new IngredientType(array(
     'type' => 'standard',
     'label' => t('Standard'),
     'weight' => 0,
-    // Uncomment to prevent changes to the standard bunlde type.
     // 'status' => ENTITY_FIXED,
-  );
+  ));
   return $types;
 }
 
 /**
  * Using a custom class for the ingredient type, enables us to define custom 
  * behavior for objects of the ingredient type entity. 
- * 
- * In this case we are adding a new method, called isLocked(), which tells
- * whether the type can be safely deleted or not.
- *
- * We're also overriding and extending the save() method, so that we can flush
- * the Field API's field info cache, so that changes to extra fields, added to
- * the entity, will be reflected.
  */
 class IngredientType extends Entity {
   // Machine-name
@@ -227,36 +200,4 @@ function entity_recipe_entity_property_info_alter(&$info) {
   $properties['name'] += array(
     'setter callback' => 'entity_property_verbatim_set',
   );
-
-  $properties = &$info['recipe_ingredient']['properties'];
-
-  foreach (array_keys($properties) as $key) {
-    if ($key == 'riid') {
-      continue;
-    }
-    $properties[$key] += array(
-      'setter callback' => 'entity_property_verbatim_set',
-    );
-  }
-
-  // Set the type to ingredient to enable chaining
-  $properties['iid']['type'] = 'ingredient';
-}
-
-/**
- * Returns the label for the given entity.
- *
- * @param $entity
- *   Entity.
- * @param $entity_type
- *   Entity type.
- * @return string
- *   Label of the given entity.
- */
-function entity_recipe_ri_label($entity, $entity_type) {
-  // This always receives recipe_ingredient types so no need to check
-  // NOTE: This is called from within a wrapper so it's safer to implement
-  // it without using wrappers.
-  $ingredient = entity_load_single('ingredient', $entity->iid);
-  return $ingredient->label() . ' ' . $entity->qty . ' ' . $entity->qty_unit;
 }
