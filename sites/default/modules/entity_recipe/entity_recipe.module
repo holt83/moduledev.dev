@@ -41,6 +41,23 @@ function entity_recipe_entity_info() {
     'module' => 'entity_recipe',
   );
 
+  // Add bundle info but bypass entity_load() as we cannot use it here.
+  $types = db_select('ingredient_type', 'it')
+    ->fields('it')
+    ->execute()
+    ->fetchAllAssoc('type');
+  foreach ($types as $type => $type_info) {
+    $info['ingredient']['bundles'][$type] = array(
+      'label' => $type_info->label,
+      'admin' => array(
+        'path' => 'admin/structure/ingredients/manage/%ingredient_type',
+        'real path' => 'admin/structure/ingredients/manage/' . $type,
+        'bundle argument' => 4,
+        'access arguments' => array('administer ingredients'),
+      ),
+    );
+  }
+
   // A 'bundle definition entity' that stores information about each defined 
   // ingredient type.
   $info['ingredient_type'] = array(
@@ -69,25 +86,6 @@ function entity_recipe_entity_info() {
   );
 
   return $info;
-}
-
-/**
- * Implements hook_entity_info_alter().
- *
- * To be sure we can use entity_load()?
- */
-function entity_recipe_entity_info_alter(&$entity_info) {
-  foreach (entity_recipe_get_ingredient_types() as $type => $type_info) {
-    $info['ingredient']['bundles'][$type] = array(
-      'label' => $type_info->label,
-      'admin' => array(
-        'path' => 'admin/structure/ingredients/manage/%ingredient_type',
-        'real path' => 'admin/structure/ingredients/manage/' . $type,
-        'bundle argument' => 4,
-        'access arguments' => array('administer ingredients'),
-      ),
-    );
-  }  
 }
 
 /**
@@ -123,7 +121,7 @@ function entity_recipe_get_ingredient_types($ingredient_type = NULL) {
 }
 
 /**
- * Implements hook_default_ENTITY_TYPE().
+ * Implements hook_default_ingredient_type().
  *
  * This hook can be used to provide default bundles for entity types.
  */
