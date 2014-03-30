@@ -8,7 +8,7 @@
 
 /**
  * Implements hook_entity_info().
- */
+ */ 
 function entity_recipe_entity_info() {
   $info = array();
 
