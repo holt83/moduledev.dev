@@ -7,6 +7,60 @@
  */
 
 /**
+ * Implements hook_menu().
+ */
+function entity_recipe_menu() {
+  $items['admin/content/entity-recipe/ingredient/add'] = array(
+    'title' => 'Add new ingredient',
+    'page callback' => 'ingredient_add_page',
+    'access arguments' => array('administer ingredients'), // Change to acces callback and user per ingredient type permissions?
+    'weight' => 2,
+    'menu_name' => 'management',
+    'file' => 'entity_recipe.pages.inc',
+  );
+  foreach (entity_recipe_get_ingredient_types() as $type => $type_info) {
+    $type_url_str = str_replace('_', '-', $type);
+    $items['admin/content/entity-recipe/ingredient/add/' . $type_url_str] = array(
+      'title' => $type_info->label,
+      'title callback' => 'check_plain',
+      'page callback' => 'ingredient_add',
+      'page arguments' => array(2),
+      'access arguments' => array('administer ingredients'),
+      'description' => 'Add ' . $type_info->label . ' ingredient.',
+      'file' => 'entity_recipe.pages.inc',
+    );
+  }
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function entity_recipe_theme() {
+  return array(
+    'ingredient_add_list' => array(
+      'variables' => array('content' => NULL),
+      'file' => 'entity_recipe.pages.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_forms().
+ *
+ * All node forms share the same form handler.
+ */
+function entity_recipe_forms() {
+  $forms = array();
+  if ($types = entity_recipe_get_ingredient_types()) {
+    foreach (array_keys($types) as $type) {
+      $forms[$type . '_ingredient_form']['callback'] = 'ingredient_form';
+    }
+  }
+  return $forms;
+}
+
+/**
  * Implements hook_entity_info().
  */ 
 function entity_recipe_entity_info() {
@@ -39,6 +93,7 @@ function entity_recipe_entity_info() {
     'label callback' => 'entity_class_label',
     'uri callback' => 'entity_class_uri',
     'module' => 'entity_recipe',
+    'metadata controller class' => 'IngredientMetaDataController',
   );
 
   // Add bundle info but bypass entity_load() as we cannot use it here.
@@ -89,10 +144,65 @@ function entity_recipe_entity_info() {
 }
 
 /**
+ * Implements hook_field_extra_fields().
+ */
+function entity_recipe_field_extra_fields() {
+  $extra = array();
+  foreach (entity_recipe_get_ingredient_types() as $type => $type_info) {
+    $extra['ingredient'][$type]['form'] = array(
+      'name' => array(
+        'label' => t('Name'),
+        'weight' => -15,
+      ),
+    );
+    $extra['ingredient'][$type]['display'] = array(
+      'name' => array(
+        'label' => t('Name'),
+        'weight' => -15,
+      ),
+    );
+  }
+  return $extra;
+}
+
+/**
  * Access callback for the entity API.  
  */
 function entity_recipe_access($op, $type = NULL, $account = NULL) {
   return user_access('administer ingredients', $account);
+}
+
+/**
+ * Implements hook_permission().
+ */
+function entity_recipe_permission() {
+  // Main ingredient admin permission.
+  $permissions = array(
+    'administer ingredients' => array(
+      'title' => t('Administer ingredients'),
+      'description' => t('Manage fields on ingredient types.'),
+      'restrict access' => TRUE,
+    ),
+  );
+  // Per ingredient type permissions.
+  foreach (entity_recipe_get_ingredient_types() as $type => $type_info) {
+    $type_name = check_plain($type);
+    $permissions += array(
+      "edit own $type_name ingredient" => array(
+        'title' => t('Edit own %type_name ingredient', array('%type_name' => $type_info->label)),
+      ),
+      "edit any $type_name ingredient" => array(
+        'title' => t('Edit any %type_name ingredient', array('%type_name' => $type_info->label)),
+      ),
+      "view own $type_name ingredient" => array(
+        'title' => t('View own %type_name ingredient', array('%type_name' => $type_info->label)),
+      ),
+      "view any $type_name ingredient" => array(
+        'title' => t('View any %type_name ingredient', array('%type_name' => $type_info->label)),
+      ),
+    );
+  }
+  return $permissions;
 }
 
 /**
@@ -187,15 +297,4 @@ class IngredientTypeUIController extends EntityDefaultUIController {
       = 'Manage ingredients, including fields.';
     return $items;
   }
-}
-
-/**
- * Implements hook_entity_property_info_alter().
- */
-function entity_recipe_entity_property_info_alter(&$info) {
-  $properties = &$info['ingredient']['properties'];
-
-  $properties['name'] += array(
-    'setter callback' => 'entity_property_verbatim_set',
-  );
 }
