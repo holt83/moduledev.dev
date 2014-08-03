@@ -3,6 +3,7 @@ description = Illustrates to use of the entity API to build a recipe system.
 package = " Programming Drupal Entities"
 files[] = entity_recipe.module
 files[] = entity_recipe.install
+files[] = entity_recipe.info.inc
 dependencies[] = entity
 core = 7.x
 version = 7.x-1.0

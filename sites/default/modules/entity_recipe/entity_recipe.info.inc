@@ -9,7 +9,7 @@
 /**
  * Customize the default metadata controller for the ingredient entity.
  */
-class IngredientMetaDataController extends EntityDefaultMetadataController {
+class IngredientMetaDataController extends EntityDefaultMetaDataController {
 
 	public function entityPropertyInfo() {
 		$info = parent::entityPropertyInfo();
