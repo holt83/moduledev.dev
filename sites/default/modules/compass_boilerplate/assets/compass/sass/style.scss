@@ -1,0 +1,46 @@
+/**
+ * @author Simon Holt
+ */
+
+@import "compass/css3";
+
+.shadow {
+	@include box-shadow(#000 5px 5px 5px);
+}
+
+.logo {
+	background-image: image-url("gaya-design-logo.png");
+	width: image-width("gaya-design-logo.png");
+	height: image-height("gaya-design-logo.png");
+}
+
+@import "zen";
+
+$zen-column-count: 7;
+$zen-gutter-width: 10px;
+
+.sass-test-container {
+	@include zen-grid-container;
+}
+
+.sass-test-aside1 {
+	@include zen-grid-item(2, 1);
+}
+
+.sass-test-content {
+	@include zen-grid-item(4, 2);
+}
+
+.sass-test-aside2 {
+	@include zen-grid-item(1, 7);
+}
+
+.sass-test-footer1 {
+	@include zen-clear(); /* mix-in to start a new row */
+	@include zen-grid-item(3, 5);
+}
+
+.sass-test-footer2 {
+	@include zen-grid-item(4, 1);
+}
+

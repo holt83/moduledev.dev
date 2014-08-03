@@ -24,8 +24,8 @@ function entity_fun_init() {
 		$vocabulary_wrapper = _entity_fun_create_vocabulary('Entity test vocabulary', 
 			'entity_test_vocabulary');
 	}
-	module_load_install('entity_recipe');
-	entity_recipe_install_terms();
+	/*module_load_install('entity_recipe');
+	entity_recipe_install_terms();*/
 }
         
 

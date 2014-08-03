@@ -1,0 +1,123 @@
+/**
+ * @author Simon Holt
+ */
+/* line 7, ../compass/sass/style.scss */
+.shadow {
+  -webkit-box-shadow: black 5px 5px 5px;
+  -moz-box-shadow: black 5px 5px 5px;
+  box-shadow: black 5px 5px 5px;
+}
+
+/* line 11, ../compass/sass/style.scss */
+.logo {
+  background-image: url('../images/gaya-design-logo.png?1396186251');
+  width: 102px;
+  height: 87px;
+}
+
+/* line 22, ../compass/sass/style.scss */
+.sass-test-container {
+  *position: relative;
+  *zoom: 1;
+}
+/* line 46, ../../../../../../../../../../var/lib/gems/1.9.1/gems/zen-grids-1.4/stylesheets/zen/_grids.scss */
+.sass-test-container:before, .sass-test-container:after {
+  content: "";
+  display: table;
+}
+/* line 50, ../../../../../../../../../../var/lib/gems/1.9.1/gems/zen-grids-1.4/stylesheets/zen/_grids.scss */
+.sass-test-container:after {
+  clear: both;
+}
+
+/* line 26, ../compass/sass/style.scss */
+.sass-test-aside1 {
+  float: left;
+  width: 28.571%;
+  margin-left: 0%;
+  margin-right: -28.571%;
+  padding-left: 5px;
+  padding-right: 5px;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  _display: inline;
+  _overflow: hidden;
+  _overflow-y: visible;
+}
+
+/* line 30, ../compass/sass/style.scss */
+.sass-test-content {
+  float: left;
+  width: 57.143%;
+  margin-left: 14.286%;
+  margin-right: -71.429%;
+  padding-left: 5px;
+  padding-right: 5px;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  _display: inline;
+  _overflow: hidden;
+  _overflow-y: visible;
+}
+
+/* line 34, ../compass/sass/style.scss */
+.sass-test-aside2 {
+  float: left;
+  width: 14.286%;
+  margin-left: 85.714%;
+  margin-right: -100%;
+  padding-left: 5px;
+  padding-right: 5px;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  _display: inline;
+  _overflow: hidden;
+  _overflow-y: visible;
+}
+
+/* line 38, ../compass/sass/style.scss */
+.sass-test-footer1 {
+  clear: left;
+  /* mix-in to start a new row */
+  float: left;
+  width: 42.857%;
+  margin-left: 57.143%;
+  margin-right: -100%;
+  padding-left: 5px;
+  padding-right: 5px;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  _display: inline;
+  _overflow: hidden;
+  _overflow-y: visible;
+}
+
+/* line 43, ../compass/sass/style.scss */
+.sass-test-footer2 {
+  float: left;
+  width: 57.143%;
+  margin-left: 0%;
+  margin-right: -57.143%;
+  padding-left: 5px;
+  padding-right: 5px;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  _display: inline;
+  _overflow: hidden;
+  _overflow-y: visible;
+}
